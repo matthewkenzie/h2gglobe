@@ -4424,7 +4424,13 @@ void PhotonAnalysis::saveSpinTree(LoopAll &l, int category, float evweight, TLor
     
    l.FillTree("rv",isCorrectVertex,"spin_trees");
    l.FillTree("higgs_mass",Higgs.M(),"spin_trees");
-   
+ 
+   l.FillTree("myVBFLeadJEta",myVBFLeadJEta,"spin_trees");
+   l.FillTree("myVBFSubJEta",myVBFSubJEta,"spin_trees");
+   l.FillTree("myVBFLeadJPt",myVBFLeadJPt,"spin_trees");
+   l.FillTree("myVBFSubJPt",myVBFSubJPt,"spin_trees");
+   l.FillTree("myVBF_Mjj",myVBF_Mjj,"spin_trees");
+    /*
     PhotonReducedInfo pho1 (
         *((TVector3*)     l.sc_xyz->At(l.pho_scind[ipho1])),
         ((TLorentzVector*)l.pho_p4->At(ipho1))->Energy(),
@@ -4468,6 +4474,7 @@ void PhotonAnalysis::saveSpinTree(LoopAll &l, int category, float evweight, TLor
    l.FillTree("leadEta",float(lead_p4.Eta()),"spin_trees");
    l.FillTree("subleadEta",float(sublead_p4.Eta()),"spin_trees");
    l.FillTree("cosDphi",float(TMath::Cos(lead_p4.Phi()-sublead_p4.Phi())),"spin_trees");
+   */
 }
 
 // for Mass-factorized

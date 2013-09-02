@@ -16,6 +16,7 @@ includeVBF=0
 includeVHhad=0
 includeVHlep=0
 includeVHmet=0
+includeVHlepPlusMet=0
 
 doPtSpinSmear=1
 doPtSpinSyst=1
