@@ -8,8 +8,13 @@ import os.path as p
 import os, sys
 from subprocess import check_call as call
 
+ROOT.gROOT.SetBatch()
+ROOT.gROOT.ProcessLine(".L Macros/pileup/pileup.C+g")
+from ROOT import fillHists
+
 runBinning = [0, 197495, 203767, 210000]
-h2 = ROOT.TH2F("pu_2D", "pu_2D", 100, 0, 100, 3, array.array('d',runBinning))
+h1 = ROOT.TH1D("pileup","pileup",100,0,100)
+h2 = ROOT.TH2D("pu_2D", "pu_2D", 100, 0, 100, 3, array.array('d',runBinning))
 
 parser = OptionParser(usage="usage: %prog [options] EOS_source_directory\nrun with --help to get list of options")
 parser.add_option("--putBack",    action="store_true", default=False, help="Put back merged file in source directory [default: %default].")
@@ -48,21 +53,25 @@ file = open("%(inDirName)s.files.txt"%vars(options))
 lines = file.readlines()
 file.close()
 
-for l in lines:
+for i,l in enumerate(lines):
     rootFile = ROOT.TFile.Open(l.split("\n")[0])
     tree = rootFile.Get("event")
     tree.SetBranchStatus("*", 0)
     tree.SetBranchStatus("pu_n", 1)
     tree.SetBranchStatus("run", 1)
-
+    
     entries = tree.GetEntries()
     for z in xrange(entries):
+        print '\t %d/%d  -- %4.1f%% \r'%(i,len(lines),100.*float(z)/entries),
+        sys.stdout.flush()
         tree.GetEntry(z)
         h2.Fill(tree.pu_n, tree.run)
-        h1.Fill(tree.run)
-        
+        h1.Fill(tree.pu_n)
+
+print 'Done'
 out = ROOT.TFile("%(inDirName)s.pileup.root"%vars(options), "recreate")
 h2.Write()
+h1.Write()
 out.Close()
 
 if options.putHadoop:
