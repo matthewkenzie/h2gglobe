@@ -92,7 +92,7 @@ void doBandsFit(TGraphAsymmErrors *onesigma, TGraphAsymmErrors *twosigma,
 	//onesigma->Print("V");
 }
 
-void getConfigFromFile(TFile *inFile, bool &is2011, bool &baseline){
+void getConfigFromFile(TFile *inFile, bool &is2011, bool &baseline, bool &spin){
   
   TIter next(inFile->GetListOfKeys());
   TKey *key;
@@ -102,6 +102,7 @@ void getConfigFromFile(TFile *inFile, bool &is2011, bool &baseline){
       TMacro *macro = (TMacro*)inFile->Get(key->GetName());
       if (macro->GetName()==TString("statanalysis") || macro->GetName()==TString("spinanalysis")) baseline=true;
       if (macro->GetName()==TString("massfactorizedmvaanalysis")) baseline=false;
+      if (macro->GetName()==TString("spinanalysis")) spin=true;
       TList *list = (TList*)macro->GetListOfLines();
       for (int l=0; l<list->GetSize(); l++){
         TObjString *obStr = (TObjString*)list->At(l);
@@ -139,12 +140,18 @@ void makeBkgPlotsGeneric(string filebkg, string filesig="", bool blind=true, boo
   TFile *fb = TFile::Open(filebkg.c_str());
 	TFile *fs = ( filesig.empty() ? fb : TFile::Open(filesig.c_str()) );
 
-  getConfigFromFile(fb,is2011,baseline);
+  getConfigFromFile(fb,is2011,baseline,spin);
 	
 	RooWorkspace *w_bkg  = (RooWorkspace*) fb->Get("cms_hgg_workspace");
-  RooWorkspace *w_sig = (RooWorkspace*)fs->Get("wsig_8TeV");
-
-  bool doSignal=false;
+  if (!w_bkg){
+		cout << "Bkg workspace null" << endl;
+		exit(1);
+	}
+	
+	bool doSignal=false;
+  RooWorkspace *w_sig = 0;
+	if (is2011) w_sig = (RooWorkspace*)fs->Get("wsig_7TeV");
+	else w_sig = (RooWorkspace*)fs->Get("wsig_8TeV");
   if (w_sig) doSignal=true;
 
 	RooRealVar *x = (RooRealVar*) w_bkg->var("CMS_hgg_mass");
@@ -176,7 +183,13 @@ void makeBkgPlotsGeneric(string filebkg, string filesig="", bool blind=true, boo
 
 		// Background Pdf ->
 		/// RooExtendPdf *bkg =  (RooExtendPdf*)w_bkg->pdf(Form("data_pol_model_8TeV_cat%d",cat));
-		RooAbsPdf *bkg =  (RooAbsPdf*)w_bkg->pdf(Form("pdf_data_pol_model_8TeV_cat%d",cat));
+		RooAbsPdf *bkg = 0;
+		if (is2011) bkg = (RooAbsPdf*)w_bkg->pdf(Form("pdf_data_pol_model_7TeV_cat%d",cat));
+		else bkg = (RooAbsPdf*)w_bkg->pdf(Form("pdf_data_pol_model_8TeV_cat%d",cat));
+		if (!bkg) {
+			cout << "Bkg pdf not found" << endl;
+			exit(1);
+		}
 		bkg->Print();
 		bkg->fitTo(*data);
 		RooFitResult *r = bkg->fitTo(*data,RooFit::Save(1));
@@ -239,7 +252,9 @@ void makeBkgPlotsGeneric(string filebkg, string filesig="", bool blind=true, boo
 
     if (doSignal) {
       MH->setVal(125);
-      sigPDF->plotOn(frame,Normalization(sigMCHist->Integral(),RooAbsReal::NumEvent),LineColor(kBlue),LineWidth(3));
+      //sigPDF->plotOn(frame,Normalization(sigMCHist->Integral(),RooAbsReal::NumEvent),LineColor(kBlue),LineWidth(3));
+			sigPDF->plotOn(frame,Normalization(1.0,RooAbsReal::RelativeExpected),LineColor(kBlue),LineWidth(3));
+			sigPDF->plotOn(frame,Normalization(1.0,RooAbsReal::RelativeExpected),LineColor(kBlue),LineWidth(3),FillColor(38),FillStyle(3001),DrawOption("F"));
       TObject *sigLeg = (TObject*)frame->getObject(frame->numItems()-1);
       leg->AddEntry(sigLeg,"Sig model m_{H}=125GeV","L");
     }
@@ -263,6 +278,7 @@ void makeBkgPlotsGeneric(string filebkg, string filesig="", bool blind=true, boo
 		//latex->DrawLatex(0.2,0.75,labels[cat].c_str());
 
     can->SaveAs(Form("newplotcat%d.pdf",cat));
+    can->SaveAs(Form("newplotcat%d.png",cat));
   
   }
   outf->Close();
