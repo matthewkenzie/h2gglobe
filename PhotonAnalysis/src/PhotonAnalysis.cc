@@ -107,6 +107,9 @@ PhotonAnalysis::PhotonAnalysis()  :
     bookDiPhoCutsInVbf=false;
     multiclassVbfSelection=false;
     vbfVsDiphoVbfSelection=false;
+    
+    combinedmvaVbfSelection=false;
+    reweighPt=false;
 }
 
 // ----------------------------------------------------------------------------------------------------
@@ -142,28 +145,36 @@ void readEnergyScaleOffsets(const std::string &fname, EnergySmearer::energySmear
     float EBHighR9, EBLowR9, EBm4HighR9, EBm4LowR9, EEHighR9, EELowR9;
     char catname[200];
     do {
-	float minet=0., maxet=1.e+9, mineta, maxeta, minr9, maxr9, offset, stocastic=0., err;
+	int nread = 0;
+	float minet=0., maxet=1.e+9, mineta=0., maxeta=999., minr9=-999, maxr9=999, offset=0., stocastic=0., err=0.;
 	int type;
 	int  first, last;
 	
         in.getline( line, 200, '\n' );
+        if( line[0] == '#' ) { continue; }
 	
-	if( sscanf(line,"%s %d %f %f %f %f %d %d %f %f\n", &catname, &type, 
-		   &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &err  ) == 10 ) {
-	    std::cout << "Energy scale (or smering) by run " <<  catname << " " << type << " " << mineta << " " << maxeta << " " << minr9 << " " << maxr9 
-		      << " " << first << " " << last << " " << offset << " " << err << std::endl;
-	} else if( sscanf(line,"%s %d %f %f %f %f %d %d %f %f %f\n", &catname, &type, 
-			  &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &stocastic, &err  ) == 11 ) {
-	    std::cout << "Energy scale (or smering) by run " <<  catname << " " << type << " " << mineta << " " << maxeta << " " << minr9 << " " << maxr9 
-		      << " " << first << " " << last << " " << offset << " " << stocastic <<  " " << err << std::endl;
-	} else if( sscanf(line,"%s %d %f %f %f %f %f %f %d %d %f %f %f\n", &catname, &type, 
-			  &minet, &maxet, &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &stocastic, &err  ) == 13 ) {
-	    std::cout << "Energy scale (or smering) by run " <<  catname << " " << type 
-		      << " " << minet << " " << maxet << " " << mineta << " " << maxeta << " " << minr9 << " " << maxr9 
-		      << " " << first << " " << last << " " << offset << " " << stocastic <<  " " << err << std::endl;
-	} else { 
+	if( (nread == 0) && 
+	    (nread = sscanf(line,"%s %d %f %f %f %f %f %f %d %d %f %f %f\n", &catname, &type, 
+			    &minet, &maxet, &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &stocastic, &err  ) ) != 13 ) {
+	    nread=0, minet=0., maxet=1.e+9, mineta=0., maxeta=999., minr9=-999, maxr9=999, offset=0., stocastic=0., err=0.;
+	}
+	if( (nread == 0) && 
+	    (nread = sscanf(line,"%s %d %f %f %f %f %d %d %f %f %f\n", &catname, &type, 
+			    &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &stocastic, &err  ) ) != 11 ) {
+	    nread=0, minet=0., maxet=1.e+9, mineta=0., maxeta=999., minr9=-999, maxr9=999, offset=0., stocastic=0., err=0.;
+	} 
+	if( (nread == 0) &&
+	    ( nread = sscanf(line,"%s %d %f %f %f %f %d %d %f %f\n", &catname, &type, 
+			     &mineta, &maxeta, &minr9, &maxr9, &first, &last, &offset, &err  ) ) != 10 ) {
+	    nread=0, minet=0., maxet=1.e+9, mineta=0., maxeta=999., minr9=-999, maxr9=999, offset=0., stocastic=0., err=0.;
+	}
+	if( nread == 0 ) { 
 	    continue; 
 	}
+	
+	std::cout << "Energy scale (or smearing) by run " << nread  << " " << catname   << " " << type 
+		  << " " << minet << " " << maxet << " " << mineta << " " << maxeta    << " " << minr9 << " " << maxr9 
+		  << " " << first << " " << last  << " " << offset << " " << stocastic <<  " " << err << std::endl;
 	
 	assert( type>=0 && type<=2 );
 	
@@ -261,29 +272,113 @@ void PhotonAnalysis::loadPuWeights(int typid, TDirectory * puFile, TH1 * target)
 }
 
 // ----------------------------------------------------------------------------------------------------
-float PhotonAnalysis::getPuWeight(int n_pu, int sample_type, SampleContainer* container, bool warnMe)
-{
-    if ( sample_type !=0 && puHist != "") {
-        bool hasSpecificWeight = weights.find( sample_type ) != weights.end() ;
-    if( ! hasSpecificWeight && container != 0 && container->pileup != 0 ) {
-        std::cout << "On-the fly pileup reweighing typeid " << sample_type << " " << container->pileup << std::endl;
-        TFile * samplePu = TFile::Open(container->pileup.c_str());
-        loadPuWeights(sample_type, samplePu, puTargetHist);
-        samplePu->Close();
-        hasSpecificWeight = true;
-    } else if( sample_type < 0 && !hasSpecificWeight && warnMe ) {
-            std::cout  << "WARNING no pu weights specific for sample " << sample_type << std::endl;
-        }
-        std::vector<double> & puweights = hasSpecificWeight ? weights[ sample_type ] : weights[0];
-        if(n_pu<puweights.size()){
-            return puweights[n_pu];
-        }
-        else{ //should not happen as we have a weight for all simulated n_pu multiplicities!
-            cout <<"n_pu ("<< n_pu<<") too big ("<<puweights.size()<<") ["<< sample_type <<"], event will not be reweighted for pileup"<<endl;
-        }
+void PhotonAnalysis::load2DPuWeights(int typid, TDirectory * puFile, std::vector<TH1*> targets) {
+
+    cout<<"Loading 2D pileup weights for typid " << typid << " for all run periods." << endl;
+
+    rd_weights[typid].resize(targets.size());    
+    for (unsigned int i=0; i<targets.size(); i++) {
+	std::cout<<targets[i]->GetName() << std::endl;
+	TH1* gen_pu = ((TH2F*)puFile->Get("pu_2D"))->ProjectionX("pileup", i+1, i+1);
+	assert( gen_pu != 0 );
+	TH1* hweigh =(TH1*)targets[i]->Clone();
+	hweigh->Reset("ICE");
+	hweigh->Divide(targets[i], gen_pu, 1., 1./gen_pu->Integral());
+	rd_weights[typid][i].clear();
+	for( int ii=1; ii<hweigh->GetNbinsX(); ++ii ) {
+	    rd_weights[typid][i].push_back(hweigh->GetBinContent(ii));
+	}
     }
+
+    std::cout << "pile-up 2D weights: ["<<typid<<"]";
+    //std::cout << targets.size() << std::endl;
+    for (int i=0; i<targets.size(); i++) {
+	std::copy(rd_weights[typid][i].begin(),rd_weights[typid][i].end(), std::ostream_iterator<double>(std::cout,","));
+	std::cout << std::endl;
+    }
+}
+
+// ----------------------------------------------------------------------------------------------------
+float PhotonAnalysis::getPuWeight(int n_pu, int sample_type, SampleContainer* container, bool warnMe, int run) {
+
+    if ( sample_type !=0 && puHist != "") {
+
+        bool hasSpecificWeight = weights.find( sample_type ) != weights.end();
+	bool hasSpecificWeight2D = rd_weights.find(sample_type) != rd_weights.end();
+	
+	if(!hasSpecificWeight && !hasSpecificWeight2D && container != 0 && container->pileup != 0 ) {
+	    std::cout << "On-the fly pileup reweighing typeid " << sample_type << " " << container->pileup << std::endl;
+	    TFile * samplePu = TFile::Open(container->pileup.c_str());
+	    TKey* key = samplePu->FindKey("pu_2D");
+	    if (key != 0 && !puTargets.empty()) {
+		load2DPuWeights(sample_type, samplePu, puTargetHists);
+		hasSpecificWeight2D = true;
+	    } else {
+		loadPuWeights(sample_type, samplePu, puTargetHist);
+		hasSpecificWeight = true;
+	    }
+	    samplePu->Close();
+	} else if( sample_type < 0 && !hasSpecificWeight && !hasSpecificWeight2D && warnMe) {
+            std::cerr  << "WARNING no pu weights specific for sample " << sample_type << std::endl;
+        }
+
+	if (hasSpecificWeight2D) {
+	    Int_t index = -1;
+	    
+	    if (run <= 197495)
+		index = 0;
+	    else if (run > 197495 && run <= 203767)
+		index = 1;
+	    else if (run > 203767)
+		index = 2;
+	    else {
+		std::cout << "ERROR: it is not possible to weight this event (unrecognized run " << run << ")" << std::endl;
+		abort();
+	    }
+	    std::vector<double>& puweights = rd_weights[sample_type][index];
+	    if (n_pu < puweights.size()) {
+		return puweights[n_pu];
+	    }
+	} 
+
+	if (hasSpecificWeight) {
+	    std::vector<double> & puweights = weights[sample_type];
+	    if(n_pu<puweights.size()){
+		return puweights[n_pu];
+	    }
+	    else{ //should not happen as we have a weight for all simulated n_pu multiplicities!
+		cout <<"n_pu ("<< n_pu<<") too big ("<<puweights.size()<<") ["<< sample_type <<"], event will not be reweighted for pileup"<<endl;
+	    }
+	}
+    }
+
     return 1.;
 }
+
+// ----------------------------------------------------------------------------------------------------
+//float PhotonAnalysis::getPuWeight(int n_pu, int sample_type, SampleContainer* container, bool warnMe)
+//{
+//    if ( sample_type !=0 && puHist != "") {
+//        bool hasSpecificWeight = weights.find( sample_type ) != weights.end() ;
+//    if( ! hasSpecificWeight && container != 0 && container->pileup != 0 ) {
+//        std::cout << "On-the fly pileup reweighing typeid " << sample_type << " " << container->pileup << std::endl;
+//        TFile * samplePu = TFile::Open(container->pileup.c_str());
+//        loadPuWeights(sample_type, samplePu, puTargetHist);
+//        samplePu->Close();
+//        hasSpecificWeight = true;
+//    } else if( sample_type < 0 && !hasSpecificWeight && warnMe ) {
+//            std::cout  << "WARNING no pu weights specific for sample " << sample_type << std::endl;
+//        }
+//        std::vector<double> & puweights = hasSpecificWeight ? weights[ sample_type ] : weights[0];
+//        if(n_pu<puweights.size()){
+//            return puweights[n_pu];
+//        }
+//        else{ //should not happen as we have a weight for all simulated n_pu multiplicities!
+//            cout <<"n_pu ("<< n_pu<<") too big ("<<puweights.size()<<") ["<< sample_type <<"], event will not be reweighted for pileup"<<endl;
+//        }
+//    }
+//    return 1.;
+//}
 
 // ----------------------------------------------------------------------------------------------------
 void PhotonAnalysis::applyGenLevelSmearings(double & genLevWeight, const TLorentzVector & gP4, int npu, int sample_type, BaseGenLevelSmearer * sys, float syst_shift)
@@ -521,8 +616,6 @@ void PhotonAnalysis::Init(LoopAll& l)
     }else if(energyCorrectionMethod=="BendavidOTF"){
         energyCorrected     = (l.pho_regr_energy_otf);
         energyCorrectedError= (l.pho_regr_energyerr_otf);
-
-        //  }else if(energyCorrectionMethod=="PFRegression"){
     }else{
         assert(doEcorrectionSmear==false);
     }
@@ -672,179 +765,194 @@ void PhotonAnalysis::Init(LoopAll& l)
 	triggerSelections.back().addpath("HLT_Photon36_R9Id85_Photon22_R9Id85_v");
     }
 
-    // n-1 plots for VBF tag 2011
-    l.SetCutVariables("cut_VBFLeadJPt",         &myVBFLeadJPt);
-    l.SetCutVariables("cut_VBFSubJPt",          &myVBFSubJPt);
-    l.SetCutVariables("cut_VBF_Mjj",            &myVBF_Mjj);
-    l.SetCutVariables("cut_VBF_dEta",           &myVBFdEta);
-    l.SetCutVariables("cut_VBF_Zep",            &myVBFZep);
-    l.SetCutVariables("cut_VBF_dPhi",           &myVBFdPhi);
-    l.SetCutVariables("cut_VBF_Mgg0",           &myVBF_Mgg);
-    l.SetCutVariables("cut_VBF_Mgg2",           &myVBF_Mgg);
-    l.SetCutVariables("cut_VBF_Mgg4",           &myVBF_Mgg);
-    l.SetCutVariables("cut_VBF_Mgg10",          &myVBF_Mgg);
-    l.SetCutVariables("cut_VBF_Mgg4_100_180",   &myVBF_Mgg);
-    l.SetCutVariables("cut_VBF_Mgg2_100_180",   &myVBF_Mgg);
-
-    if( vbfVsDiphoVbfSelection ) {
-	multiclassVbfSelection = true;
-	assert(mvaVbfCatBoundaries.empty() );
-	mvaVbfCatBoundaries = multiclassVbfCatBoundaries0;
-    }
-    if( mvaVbfSelection || multiclassVbfSelection || bookDiPhoCutsInVbf  ) {
-        l.SetCutVariables("cut_VBF_DiPhoPtOverM",   &myVBFDiPhoPtOverM);
-        l.SetCutVariables("cut_VBF_LeadPhoPtOverM", &myVBFLeadPhoPtOverM);
-        l.SetCutVariables("cut_VBF_SubPhoPtOverM",  &myVBFSubPhoPtOverM);
-    }
-
-    if( mvaVbfSelection || multiclassVbfSelection ) {
-
-	tmvaVbfReader_ = new TMVA::Reader( "!Color:!Silent" );
-
-	tmvaVbfReader_->AddVariable("jet1pt"              , &myVBFLeadJPt);
-	tmvaVbfReader_->AddVariable("jet2pt"	          , &myVBFSubJPt);
-	tmvaVbfReader_->AddVariable("abs(jet1eta-jet2eta)", &myVBFdEta);
-	tmvaVbfReader_->AddVariable("mj1j2"		  , &myVBF_Mjj);
-	tmvaVbfReader_->AddVariable("zepp"		  , &myVBFZep);
-	tmvaVbfReader_->AddVariable("dphi"		  , &myVBFdPhi);
-	if( mvaVbfUseDiPhoPt ) {
-	    tmvaVbfReader_->AddVariable("diphopt/diphoM"      , &myVBFDiPhoPtOverM);
+    if( l.typerun != l.kReduce ) {
+	// n-1 plots for VBF tag 2011
+	l.SetCutVariables("cut_VBFLeadJPt",         &myVBFLeadJPt);
+	l.SetCutVariables("cut_VBFSubJPt",          &myVBFSubJPt);
+	l.SetCutVariables("cut_VBF_Mjj",            &myVBF_Mjj);
+	l.SetCutVariables("cut_VBF_dEta",           &myVBFdEta);
+	l.SetCutVariables("cut_VBF_Zep",            &myVBFZep);
+	l.SetCutVariables("cut_VBF_dPhi",           &myVBFdPhi);
+	l.SetCutVariables("cut_VBF_Mgg0",           &myVBF_Mgg);
+	l.SetCutVariables("cut_VBF_Mgg2",           &myVBF_Mgg);
+	l.SetCutVariables("cut_VBF_Mgg4",           &myVBF_Mgg);
+	l.SetCutVariables("cut_VBF_Mgg10",          &myVBF_Mgg);
+	l.SetCutVariables("cut_VBF_Mgg4_100_180",   &myVBF_Mgg);
+	l.SetCutVariables("cut_VBF_Mgg2_100_180",   &myVBF_Mgg);
+    
+	if( vbfVsDiphoVbfSelection ) {
+	    multiclassVbfSelection = true;
+	    assert(mvaVbfCatBoundaries.empty() );
+	    mvaVbfCatBoundaries = multiclassVbfCatBoundaries0;
 	}
-	if( mvaVbfUsePhoPt   ) {
-	    tmvaVbfReader_->AddVariable("pho1pt/diphoM"	  , &myVBFLeadPhoPtOverM);
-	    tmvaVbfReader_->AddVariable("pho2pt/diphoM"       , &myVBFSubPhoPtOverM);
+	if( mvaVbfSelection || multiclassVbfSelection || bookDiPhoCutsInVbf  ) {
+	    l.SetCutVariables("cut_VBF_DiPhoPtOverM",   &myVBFDiPhoPtOverM);
+	    l.SetCutVariables("cut_VBF_LeadPhoPtOverM", &myVBFLeadPhoPtOverM);
+	    l.SetCutVariables("cut_VBF_SubPhoPtOverM",  &myVBFSubPhoPtOverM);
+	}
+	
+	if( mvaVbfSelection || multiclassVbfSelection || combinedmvaVbfSelection ) {
+	    
+	    tmvaVbfReader_ = new TMVA::Reader( "!Color:!Silent" );
+	    
+	    if (combinedmvaVbfSelection) {
+		tmvaVbfReader_->AddVariable("dijet_leadEta",    &myVBFLeadJEta);
+		tmvaVbfReader_->AddVariable("dijet_subleadEta", &myVBFSubJEta);
+		tmvaVbfReader_->AddVariable("dijet_LeadJPt",    &myVBFLeadJPt);
+		tmvaVbfReader_->AddVariable("dijet_SubJPt",     &myVBFSubJPt);
+		tmvaVbfReader_->AddVariable("dijet_Zep",        &myVBFZep);
+		tmvaVbfReader_->AddVariable("dijet_dPhi",       &myVBFdPhi);
+		tmvaVbfReader_->AddVariable("dijet_Mjj",        &myVBF_Mjj);	   
+		tmvaVbfReader_->AddVariable("dipho_pt/mass",    &myVBFDiPhoPtOverM);
+		
+		tmvaVbfDiphoReader_ = new TMVA::Reader("!Color:!Silent"); 
+		tmvaVbfDiphoReader_->AddVariable("bdt_incl",                       &myVBFDIPHObdt);
+		tmvaVbfDiphoReader_->AddVariable("bdt_dijet_sherpa_plusdiphoptom", &myVBFDIPHOdijet);
+		tmvaVbfDiphoReader_->AddVariable("dipho_pt/mass",                  &myVBFDiPhoPtOverM);
+		tmvaVbfDiphoReader_->BookMVA(mvaVbfDiphoMethod, mvaVbfDiphoWeights);
+	    } else {
+		tmvaVbfReader_->AddVariable("jet1pt"              , &myVBFLeadJPt);
+		tmvaVbfReader_->AddVariable("jet2pt"	          , &myVBFSubJPt);
+		tmvaVbfReader_->AddVariable("abs(jet1eta-jet2eta)", &myVBFdEta);
+		tmvaVbfReader_->AddVariable("mj1j2"		  , &myVBF_Mjj);
+		tmvaVbfReader_->AddVariable("zepp"		  , &myVBFZep);
+		tmvaVbfReader_->AddVariable("dphi"		  , &myVBFdPhi);
+		if( mvaVbfUseDiPhoPt ) {
+		    tmvaVbfReader_->AddVariable("diphopt/diphoM"      , &myVBFDiPhoPtOverM);
+		}
+		if( mvaVbfUsePhoPt   ) {
+		    tmvaVbfReader_->AddVariable("pho1pt/diphoM"	  , &myVBFLeadPhoPtOverM);
+		    tmvaVbfReader_->AddVariable("pho2pt/diphoM"       , &myVBFSubPhoPtOverM);
+		}
+	    }
+	
+	    tmvaVbfReader_->BookMVA( mvaVbfMethod, mvaVbfWeights );
+	    
+	}
+	
+	if( mvaVbfSpin && (mvaVbfSelection || multiclassVbfSelection) )
+	{
+	    tmvaVbfSpinReader_ = new TMVA::Reader( "!Color:!Silent" );
+	    
+	    tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJ := abs(deltaPhiJJ)", &myVBFSpin_absDeltaPhiJJ);
+	    tmvaVbfSpinReader_->AddVariable("absCosThetaJ1 := abs(cosThetaJ1)", &myVBFSpin_absCosThetaJ1);
+	    tmvaVbfSpinReader_->AddVariable("absCosThetaJ2 := abs(cosThetaJ2)", &myVBFSpin_absCosThetaJ2);
+	    
+	    //tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJS := abs(deltaPhiJJS)", &myVBFSpin_absDeltaPhiJJS);
+	    tmvaVbfSpinReader_->AddVariable("absCosThetaS := abs(cosThetaS)", &myVBFSpin_absCosThetaS);
+	    tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJL := abs(deltaPhiJJL)", &myVBFSpin_absDeltaPhiJJL);
+	    tmvaVbfSpinReader_->AddVariable("absCosThetaL := abs(cosThetaL)", &myVBFSpin_absCosThetaL);
+	    
+	    tmvaVbfSpinReader_->BookMVA( mvaVbfSpinMethod, mvaVbfSpinWeights );
 	}
 
-	tmvaVbfReader_->BookMVA( mvaVbfMethod, mvaVbfWeights );
-
+	// n-1 plots for VH hadronic tag 2011
+	l.SetCutVariables("cut_VHhadLeadJPt",      &myVHhadLeadJPt);
+	l.SetCutVariables("cut_VHhadSubJPt",       &myVHhadSubJPt);
+	l.SetCutVariables("cut_VHhad_Mjj",         &myVHhad_Mjj);
+	l.SetCutVariables("cut_VHhad_dEta",        &myVHhaddEta);
+	l.SetCutVariables("cut_VHhad_Zep",         &myVHhadZep);
+	l.SetCutVariables("cut_VHhad_dPhi",        &myVHhaddPhi);
+	l.SetCutVariables("cut_VHhad_Mgg0",        &myVHhad_Mgg);
+	l.SetCutVariables("cut_VHhad_Mgg2",        &myVHhad_Mgg);
+	l.SetCutVariables("cut_VHhad_Mgg4",        &myVHhad_Mgg);
+	l.SetCutVariables("cut_VHhad_Mgg10",        &myVHhad_Mgg);
+	l.SetCutVariables("cut_VHhad_Mgg2_100_160",        &myVHhad_Mgg);
+	l.SetCutVariables("cut_VHhad_Mgg4_100_160",        &myVHhad_Mgg);
+	
+	// n-1 plot for ClassicCats
+	l.SetCutVariables("cutnm1hir9EB_r9",             &sublead_r9);
+	l.SetCutVariables("cutnm1hir9EB_isoOverEt",      &sublead_isoOverEt);
+	l.SetCutVariables("cutnm1hir9EB_badisoOverEt",   &sublead_badisoOverEt);
+	l.SetCutVariables("cutnm1hir9EB_trkisooet",      &sublead_trkisooet);
+	l.SetCutVariables("cutnm1hir9EB_sieie",          &sublead_sieie);
+	l.SetCutVariables("cutnm1hir9EB_drtotk",         &sublead_drtotk);
+	l.SetCutVariables("cutnm1hir9EB_hovere",         &sublead_hovere);
+	l.SetCutVariables("cutnm1hir9EB_Mgg",            &sublead_mgg);
+	
+	l.SetCutVariables("cutnm1lor9EB_r9",             &sublead_r9);
+	l.SetCutVariables("cutnm1lor9EB_isoOverEt",      &sublead_isoOverEt);
+	l.SetCutVariables("cutnm1lor9EB_badisoOverEt",   &sublead_badisoOverEt);
+	l.SetCutVariables("cutnm1lor9EB_trkisooet",      &sublead_trkisooet);
+	l.SetCutVariables("cutnm1lor9EB_sieie",          &sublead_sieie);
+	l.SetCutVariables("cutnm1lor9EB_drtotk",         &sublead_drtotk);
+	l.SetCutVariables("cutnm1lor9EB_hovere",         &sublead_hovere);
+	l.SetCutVariables("cutnm1lor9EB_Mgg",            &sublead_mgg);
+	
+	l.SetCutVariables("cutnm1hir9EE_r9",             &sublead_r9);
+	l.SetCutVariables("cutnm1hir9EE_isoOverEt",      &sublead_isoOverEt);
+	l.SetCutVariables("cutnm1hir9EE_badisoOverEt",   &sublead_badisoOverEt);
+	l.SetCutVariables("cutnm1hir9EE_trkisooet",      &sublead_trkisooet);
+	l.SetCutVariables("cutnm1hir9EE_sieie",          &sublead_sieie);
+	l.SetCutVariables("cutnm1hir9EE_drtotk",         &sublead_drtotk);
+	l.SetCutVariables("cutnm1hir9EE_hovere",         &sublead_hovere);
+	l.SetCutVariables("cutnm1hir9EE_Mgg",            &sublead_mgg);
+	
+	l.SetCutVariables("cutnm1lor9EE_r9",             &sublead_r9);
+	l.SetCutVariables("cutnm1lor9EE_isoOverEt",      &sublead_isoOverEt);
+	l.SetCutVariables("cutnm1lor9EE_badisoOverEt",   &sublead_badisoOverEt);
+	l.SetCutVariables("cutnm1lor9EE_trkisooet",      &sublead_trkisooet);
+	l.SetCutVariables("cutnm1lor9EE_sieie",          &sublead_sieie);
+	l.SetCutVariables("cutnm1lor9EE_drtotk",         &sublead_drtotk);
+	l.SetCutVariables("cutnm1lor9EE_hovere",         &sublead_hovere);
+	l.SetCutVariables("cutnm1lor9EE_Mgg",            &sublead_mgg);
+	
+	if(includeVHlep) {
+	    l.SetCutVariables("cutEl_leptonSig",    &myEl_leptonSig);
+	    l.SetCutVariables("cutEl_elpt",         &myEl_elpt);
+	    l.SetCutVariables("cutEl_oEsuboP",      &myEl_oEsuboP);
+	    l.SetCutVariables("cutEl_D0",           &myEl_D0     );
+	    l.SetCutVariables("cutEl_DZ",           &myEl_DZ     );
+	    l.SetCutVariables("cutEl_mishit",       &myEl_mishit );
+	    l.SetCutVariables("cutEl_conv",         &myEl_conv   );
+	    l.SetCutVariables("cutEl_detain",       &myEl_detain );
+	    l.SetCutVariables("cutEl_dphiin",       &myEl_dphiin );
+	    l.SetCutVariables("cutEl_sieie",        &myEl_sieie  );
+	    l.SetCutVariables("cutEl_sieie2",       &myEl_sieie  );
+	    l.SetCutVariables("cutEl_hoe",          &myEl_hoe    );
+	    l.SetCutVariables("cutEl_drlead",       &myEl_drlead );
+	    l.SetCutVariables("cutEl_drsub",        &myEl_drsub  );
+	    l.SetCutVariables("cutEl_melead",       &myEl_melead );
+	    l.SetCutVariables("cutEl_meleadveto10", &myEl_meleadveto10 );
+	    l.SetCutVariables("cutEl_meleadveto15", &myEl_meleadveto15 );
+	    l.SetCutVariables("cutEl_mesub",        &myEl_mesub  );
+	    l.SetCutVariables("cutEl_mesubveto5",   &myEl_mesubveto5  );
+	    l.SetCutVariables("cutEl_mesubveto10",  &myEl_mesubveto10  );
+	    l.SetCutVariables("cutEl_reliso",       &myEl_reliso );
+	    l.SetCutVariables("cutEl_iso",          &myEl_iso    );
+	    l.SetCutVariables("cutEl_mvaNonTrig",   &myEl_mvaNonTrig);
+	    l.SetCutVariables("cutEl_dZ_ee",        &myEl_dZ_ee);
+	    l.SetCutVariables("cutEl_mass_ee",      &myEl_mass_ee);
+	    l.SetCutVariables("cutEl_inwindow_ee",  &myEl_inwindow_ee);
+	    l.SetCutVariables("cutEl_ptlead",       &myEl_ptlead    );
+	    l.SetCutVariables("cutEl_ptsub",        &myEl_ptsub     );
+	    l.SetCutVariables("cutEl_ptleadom",       &myEl_ptleadom    );
+	    l.SetCutVariables("cutEl_ptsubom",        &myEl_ptsubom     );
+	    l.SetCutVariables("cutEl_elvetolead",   &myEl_elvetolead);
+	    l.SetCutVariables("cutEl_elvetosub",    &myEl_elvetosub );
+	    l.SetCutVariables("cutEl_ptgg",         &myEl_ptgg      );
+	    l.SetCutVariables("cutEl_phomaxeta",    &myEl_phomaxeta );
+	    l.SetCutVariables("cutEl_sumpt3",       &myEl_sumpt3    );
+	    l.SetCutVariables("cutEl_sumpt4",       &myEl_sumpt4    );
+	    l.SetCutVariables("cutEl_dRtklead",     &myEl_dRtklead  );
+	    l.SetCutVariables("cutEl_dRtksub",      &myEl_dRtksub   );
+	    l.SetCutVariables("cutEl_MVAlead",      &myEl_MVAlead   );
+	    l.SetCutVariables("cutEl_MVAsub",       &myEl_MVAsub    );
+	    l.SetCutVariables("cutEl_diphomva",     &myEl_diphomva  );
+	    l.SetCutVariables("cutEl_CiClead",      &myEl_CiClead   );
+	    l.SetCutVariables("cutEl_CiCsub",       &myEl_CiCsub    );
+	    l.SetCutVariables("cutEl_mgg",          &myEl_mgg       );
+	    l.SetCutVariables("cutEl_MET",          &myEl_MET       );
+	    l.SetCutVariables("cutEl_METphi",       &myEl_METphi    );
+	    l.SetCutVariables("cutEl_presellead",   &myEl_presellead );
+	    l.SetCutVariables("cutEl_matchellead",  &myEl_matchellead);
+	    l.SetCutVariables("cutEl_preselsub",    &myEl_preselsub  );
+	    l.SetCutVariables("cutEl_matchelsub",   &myEl_matchelsub );
+	    l.SetCutVariables("cutEl_category",     &myEl_category );
+	    l.SetCutVariables("cutEl_ElePho",       &myEl_ElePho );
+	    l.SetCutVariables("cutEl_passelcuts",   &myEl_passelcuts );
+	}
     }
-
-    if( mvaVbfSpin && (mvaVbfSelection || multiclassVbfSelection) )
-    {
-      tmvaVbfSpinReader_ = new TMVA::Reader( "!Color:!Silent" );
-
-      tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJ := abs(deltaPhiJJ)", &myVBFSpin_absDeltaPhiJJ);
-      tmvaVbfSpinReader_->AddVariable("absCosThetaJ1 := abs(cosThetaJ1)", &myVBFSpin_absCosThetaJ1);
-      tmvaVbfSpinReader_->AddVariable("absCosThetaJ2 := abs(cosThetaJ2)", &myVBFSpin_absCosThetaJ2);
-
-      //tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJS := abs(deltaPhiJJS)", &myVBFSpin_absDeltaPhiJJS);
-      tmvaVbfSpinReader_->AddVariable("absCosThetaS := abs(cosThetaS)", &myVBFSpin_absCosThetaS);
-      tmvaVbfSpinReader_->AddVariable("absDeltaPhiJJL := abs(deltaPhiJJL)", &myVBFSpin_absDeltaPhiJJL);
-      tmvaVbfSpinReader_->AddVariable("absCosThetaL := abs(cosThetaL)", &myVBFSpin_absCosThetaL);
-
-      tmvaVbfSpinReader_->BookMVA( mvaVbfSpinMethod, mvaVbfSpinWeights );
-    }
-
-
-
-
-    // n-1 plots for VH hadronic tag 2011
-    l.SetCutVariables("cut_VHhadLeadJPt",      &myVHhadLeadJPt);
-    l.SetCutVariables("cut_VHhadSubJPt",       &myVHhadSubJPt);
-    l.SetCutVariables("cut_VHhad_Mjj",         &myVHhad_Mjj);
-    l.SetCutVariables("cut_VHhad_dEta",        &myVHhaddEta);
-    l.SetCutVariables("cut_VHhad_Zep",         &myVHhadZep);
-    l.SetCutVariables("cut_VHhad_dPhi",        &myVHhaddPhi);
-    l.SetCutVariables("cut_VHhad_Mgg0",        &myVHhad_Mgg);
-    l.SetCutVariables("cut_VHhad_Mgg2",        &myVHhad_Mgg);
-    l.SetCutVariables("cut_VHhad_Mgg4",        &myVHhad_Mgg);
-    l.SetCutVariables("cut_VHhad_Mgg10",        &myVHhad_Mgg);
-    l.SetCutVariables("cut_VHhad_Mgg2_100_160",        &myVHhad_Mgg);
-    l.SetCutVariables("cut_VHhad_Mgg4_100_160",        &myVHhad_Mgg);
-
-    // n-1 plot for ClassicCats
-    l.SetCutVariables("cutnm1hir9EB_r9",             &sublead_r9);
-    l.SetCutVariables("cutnm1hir9EB_isoOverEt",      &sublead_isoOverEt);
-    l.SetCutVariables("cutnm1hir9EB_badisoOverEt",   &sublead_badisoOverEt);
-    l.SetCutVariables("cutnm1hir9EB_trkisooet",      &sublead_trkisooet);
-    l.SetCutVariables("cutnm1hir9EB_sieie",          &sublead_sieie);
-    l.SetCutVariables("cutnm1hir9EB_drtotk",         &sublead_drtotk);
-    l.SetCutVariables("cutnm1hir9EB_hovere",         &sublead_hovere);
-    l.SetCutVariables("cutnm1hir9EB_Mgg",            &sublead_mgg);
-
-    l.SetCutVariables("cutnm1lor9EB_r9",             &sublead_r9);
-    l.SetCutVariables("cutnm1lor9EB_isoOverEt",      &sublead_isoOverEt);
-    l.SetCutVariables("cutnm1lor9EB_badisoOverEt",   &sublead_badisoOverEt);
-    l.SetCutVariables("cutnm1lor9EB_trkisooet",      &sublead_trkisooet);
-    l.SetCutVariables("cutnm1lor9EB_sieie",          &sublead_sieie);
-    l.SetCutVariables("cutnm1lor9EB_drtotk",         &sublead_drtotk);
-    l.SetCutVariables("cutnm1lor9EB_hovere",         &sublead_hovere);
-    l.SetCutVariables("cutnm1lor9EB_Mgg",            &sublead_mgg);
-
-    l.SetCutVariables("cutnm1hir9EE_r9",             &sublead_r9);
-    l.SetCutVariables("cutnm1hir9EE_isoOverEt",      &sublead_isoOverEt);
-    l.SetCutVariables("cutnm1hir9EE_badisoOverEt",   &sublead_badisoOverEt);
-    l.SetCutVariables("cutnm1hir9EE_trkisooet",      &sublead_trkisooet);
-    l.SetCutVariables("cutnm1hir9EE_sieie",          &sublead_sieie);
-    l.SetCutVariables("cutnm1hir9EE_drtotk",         &sublead_drtotk);
-    l.SetCutVariables("cutnm1hir9EE_hovere",         &sublead_hovere);
-    l.SetCutVariables("cutnm1hir9EE_Mgg",            &sublead_mgg);
-
-    l.SetCutVariables("cutnm1lor9EE_r9",             &sublead_r9);
-    l.SetCutVariables("cutnm1lor9EE_isoOverEt",      &sublead_isoOverEt);
-    l.SetCutVariables("cutnm1lor9EE_badisoOverEt",   &sublead_badisoOverEt);
-    l.SetCutVariables("cutnm1lor9EE_trkisooet",      &sublead_trkisooet);
-    l.SetCutVariables("cutnm1lor9EE_sieie",          &sublead_sieie);
-    l.SetCutVariables("cutnm1lor9EE_drtotk",         &sublead_drtotk);
-    l.SetCutVariables("cutnm1lor9EE_hovere",         &sublead_hovere);
-    l.SetCutVariables("cutnm1lor9EE_Mgg",            &sublead_mgg);
-
-    if(includeVHlep) {
-        l.SetCutVariables("cutEl_leptonSig",    &myEl_leptonSig);
-        l.SetCutVariables("cutEl_elpt",         &myEl_elpt);
-        l.SetCutVariables("cutEl_oEsuboP",      &myEl_oEsuboP);
-        l.SetCutVariables("cutEl_D0",           &myEl_D0     );
-        l.SetCutVariables("cutEl_DZ",           &myEl_DZ     );
-        l.SetCutVariables("cutEl_mishit",       &myEl_mishit );
-        l.SetCutVariables("cutEl_conv",         &myEl_conv   );
-        l.SetCutVariables("cutEl_detain",       &myEl_detain );
-        l.SetCutVariables("cutEl_dphiin",       &myEl_dphiin );
-        l.SetCutVariables("cutEl_sieie",        &myEl_sieie  );
-        l.SetCutVariables("cutEl_sieie2",       &myEl_sieie  );
-        l.SetCutVariables("cutEl_hoe",          &myEl_hoe    );
-        l.SetCutVariables("cutEl_drlead",       &myEl_drlead );
-        l.SetCutVariables("cutEl_drsub",        &myEl_drsub  );
-        l.SetCutVariables("cutEl_melead",       &myEl_melead );
-        l.SetCutVariables("cutEl_meleadveto10", &myEl_meleadveto10 );
-        l.SetCutVariables("cutEl_meleadveto15", &myEl_meleadveto15 );
-        l.SetCutVariables("cutEl_mesub",        &myEl_mesub  );
-        l.SetCutVariables("cutEl_mesubveto5",   &myEl_mesubveto5  );
-        l.SetCutVariables("cutEl_mesubveto10",  &myEl_mesubveto10  );
-        l.SetCutVariables("cutEl_reliso",       &myEl_reliso );
-        l.SetCutVariables("cutEl_iso",          &myEl_iso    );
-        l.SetCutVariables("cutEl_mvaNonTrig",   &myEl_mvaNonTrig);
-        l.SetCutVariables("cutEl_dZ_ee",        &myEl_dZ_ee);
-        l.SetCutVariables("cutEl_mass_ee",      &myEl_mass_ee);
-        l.SetCutVariables("cutEl_inwindow_ee",  &myEl_inwindow_ee);
-        l.SetCutVariables("cutEl_ptlead",       &myEl_ptlead    );
-        l.SetCutVariables("cutEl_ptsub",        &myEl_ptsub     );
-        l.SetCutVariables("cutEl_ptleadom",       &myEl_ptleadom    );
-        l.SetCutVariables("cutEl_ptsubom",        &myEl_ptsubom     );
-        l.SetCutVariables("cutEl_elvetolead",   &myEl_elvetolead);
-        l.SetCutVariables("cutEl_elvetosub",    &myEl_elvetosub );
-        l.SetCutVariables("cutEl_ptgg",         &myEl_ptgg      );
-        l.SetCutVariables("cutEl_phomaxeta",    &myEl_phomaxeta );
-        l.SetCutVariables("cutEl_sumpt3",       &myEl_sumpt3    );
-        l.SetCutVariables("cutEl_sumpt4",       &myEl_sumpt4    );
-        l.SetCutVariables("cutEl_dRtklead",     &myEl_dRtklead  );
-        l.SetCutVariables("cutEl_dRtksub",      &myEl_dRtksub   );
-        l.SetCutVariables("cutEl_MVAlead",      &myEl_MVAlead   );
-        l.SetCutVariables("cutEl_MVAsub",       &myEl_MVAsub    );
-        l.SetCutVariables("cutEl_diphomva",     &myEl_diphomva  );
-        l.SetCutVariables("cutEl_CiClead",      &myEl_CiClead   );
-        l.SetCutVariables("cutEl_CiCsub",       &myEl_CiCsub    );
-        l.SetCutVariables("cutEl_mgg",          &myEl_mgg       );
-        l.SetCutVariables("cutEl_MET",          &myEl_MET       );
-        l.SetCutVariables("cutEl_METphi",       &myEl_METphi    );
-        l.SetCutVariables("cutEl_presellead",   &myEl_presellead );
-        l.SetCutVariables("cutEl_matchellead",  &myEl_matchellead);
-        l.SetCutVariables("cutEl_preselsub",    &myEl_preselsub  );
-        l.SetCutVariables("cutEl_matchelsub",   &myEl_matchelsub );
-        l.SetCutVariables("cutEl_category",     &myEl_category );
-        l.SetCutVariables("cutEl_ElePho",       &myEl_ElePho );
-        l.SetCutVariables("cutEl_passelcuts",   &myEl_passelcuts );
-    }
-
 
     // CiC initialization
     // FIXME should move this to GeneralFunctions
@@ -1070,6 +1178,22 @@ void PhotonAnalysis::Init(LoopAll& l)
        Pileup Reweighting
        https://twiki.cern.ch/twiki/bin/viewauth/CMS/PileupReweighting
        ----------------------------------------------------------------------------------------------  */
+        if (puTargets.size() != 0) {
+	if (puHist == "auto") {
+	    for (unsigned int i=0; i<puTargets.size(); i++) {
+		TFile* puTargetFile = TFile::Open(puTargets[i]);
+		assert(puTargetFile != 0);
+		puTargetHists.push_back((TH1*)puTargetFile->Get("pileup"));
+		puTargetHists[i]->SetDirectory(0);
+		puTargetHists[i]->Scale(1. / puTargetHists[i]->Integral());
+		puTargetFile->Close();
+	    }
+	} else {
+	    std::cout << "WARNING: no other reweighting method implemented for RD MC." << std::endl;
+	    abort();
+	}
+    }
+
     if (puHist != "" && puHist != "auto" ) {
         if(PADEBUG)
             cout << "Opening PU file"<<endl;
@@ -1611,13 +1735,6 @@ void PhotonAnalysis::PreselectPhotons(LoopAll& l, int jentry)
     corrected_pho_energy.clear(); corrected_pho_energy.resize(l.pho_n,0.);
     int cur_type = l.itype[l.current];
 
-    // Re-EDIT 5 Aug 2013, replcing to recalcuate on the fly regression 
-    // EDIT - 4 Dec 2011 NWardle Latest Ntuple Production uses New and Correct Regression so no need to calculate on the FLY corrections
-    // TEMPORARY FIX TO CALCULATE CORRECTED ENERGIES SINCE REGRESSION WAS NOT STORED IN NTUPLES
-    // The following Fills the arrays with the ON-THE-FLY calculations
-    // -------------------------------------------------------------------------------------------//
-
-
     ////// std::vector<float> smeared_pho_r9, smeared_pho_weight;
     //////
     ////// applySinglePhotonSmearings(smeared_pho_energy, smeared_pho_r9, smeared_pho_weight,
@@ -1764,6 +1881,7 @@ void PhotonAnalysis::switchJetIdVertex(LoopAll &l, int ivtx)
 	std::cout << "WARNING choosen vertex beyond " << l.jet_algoPF1_nvtx << " and jet ID was not computed. Falling back to vertex 0." << std::endl;
 	ivtx = 0;
     }
+    //cout << " ivtx " << ivtx << " jalgonvtx " << l.jet_algoPF1_nvtx << endl;
 
     for(int ii=0; ii<l.jet_algoPF1_n; ++ii) {
 	l.jet_algoPF1_beta[ii]              = (*l.jet_algoPF1_beta_ext)[ii][ivtx];
@@ -3784,6 +3902,8 @@ bool PhotonAnalysis::VBFTag2012(int & ijet1, int & ijet2,
     if(jet1->Pt() < jet2->Pt())
       std::swap(jet1, jet2);
 
+    myVBFLeadJEta= jet1->Eta();
+    myVBFSubJEta = jet2->Eta();
     myVBFLeadJPt= jet1->Pt();
     myVBFSubJPt = jet2->Pt();
     myVBF_Mjj   = dijet.M();
@@ -4305,7 +4425,14 @@ void PhotonAnalysis::saveSpinTree(LoopAll &l, int category, float evweight, TLor
     
    l.FillTree("rv",isCorrectVertex,"spin_trees");
    l.FillTree("higgs_mass",Higgs.M(),"spin_trees");
-   
+
+    l.FillTree("myVBF_leadEta",myVBF_leadEta,"spin_trees");
+    l.FillTree("myVBF_subleadEta",myVBF_subleadEta,"spin_trees");
+    l.FillTree("myVBFLeadJPt",myVBFLeadJPt,"spin_trees");
+    l.FillTree("myVBFSubJPt",myVBFSubJPt,"spin_trees");
+    l.FillTree("myVBF_Mjj",myVBF_Mjj,"spin_trees");
+
+    /*
     PhotonReducedInfo pho1 (
         *((TVector3*)     l.sc_xyz->At(l.pho_scind[ipho1])),
         ((TLorentzVector*)l.pho_p4->At(ipho1))->Energy(),
@@ -4349,6 +4476,7 @@ void PhotonAnalysis::saveSpinTree(LoopAll &l, int category, float evweight, TLor
    l.FillTree("leadEta",float(lead_p4.Eta()),"spin_trees");
    l.FillTree("subleadEta",float(sublead_p4.Eta()),"spin_trees");
    l.FillTree("cosDphi",float(TMath::Cos(lead_p4.Phi()-sublead_p4.Phi())),"spin_trees");
+   */
 }
 
 // for Mass-factorized
@@ -4785,9 +4913,9 @@ void PhotonAnalysis::GetRegressionCorrections(LoopAll &l){
         pdfpeakval = _pdf->getVal(*_tgt);
 
 
-        // Set vectors used in reduction;
-        energyCorrected[ipho] = ecor;
-        energyCorrectedError[ipho] = ecorerr;
+        //// // Set vectors used in reduction;
+        //// energyCorrected[ipho] = ecor;
+        //// energyCorrectedError[ipho] = ecorerr;
 
         // Save new branches 
         l.pho_regr_energy_otf[ipho] = ecor;

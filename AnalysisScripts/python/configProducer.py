@@ -72,7 +72,50 @@ class configProducer:
                        "root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/hcp2012_unblind_reduction_v2/mc/Summer12_S10_8TeV/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1_31.root",
                        "root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/hcp2012_unblind_reduction_v2/mc/Summer12_S10_8TeV/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1/DYJetsToLL_M-50_TuneZ2Star_8TeV-madgraph-tarball_Summer12_DR53X-PU_S10_START53_V7A-v1_7.root",
                        "root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_vbf_optimization_v1/mc/Summer12_RD_DR53X-PU_S10_START53_V7C/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_S10_START53_V7C-v1_v3/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_S10_START53_V7C-v1_v3_86.root",
-                       "root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/moriond2013_reduction_v1/mc/Summer12_S10_8TeV/QCD_Pt-30to40_doubleEMEnriched_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_ff/QCD_Pt-30to40_doubleEMEnriched_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_ff_23.root"
+                       "root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/moriond2013_reduction_v1/mc/Summer12_S10_8TeV/QCD_Pt-30to40_doubleEMEnriched_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_ff/QCD_Pt-30to40_doubleEMEnriched_TuneZ2star_8TeV-pythia6_Summer12_DR53X-PU_S10_START53_V7A-v1_ff_23.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1_0.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1_7.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1_8.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1/VBF_HToGG_M-150_8TeV-powheg-pythia6_Summer12_DR53X-PU_RD1_START53_V7N-v1_9.root",
+
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_0.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_2.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_23.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_24.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_25.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_27.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_28.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_29.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_3.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_30.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_33.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_47.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_48.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_50.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_51.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_52.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_54.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_55.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_56.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_57.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_58.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_59.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_60.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_61.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_62.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_64.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_65.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_66.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_67.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_68.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_69.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_70.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_71.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_72.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_73.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_75.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_76.root",
+			"root://eoscms//eos/cms/store/group/phys_higgs/cmshgg/reduced/reduction_RDMC_June2013_v2/mc/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1/DiPhotonJetsBox_M60_8TeV-sherpa_Summer12_DR53X-PU_RD1_START53_V7N-v1_78.root"
                        ]
 
     # configurable from .dat file
@@ -254,7 +297,9 @@ class configProducer:
     self.add_files()
     self.ut_.SetTypeRun(self.type_,self.conf_.outfile)
     for dum in self.conf_.confs:
-      dataContainer = self.ut_.DefineSamples(dum['Nam'],dum['typ'],dum['ind'],dum['draw'],dum['red'],dum['tot'],dum['intL'],dum['lum'],dum['xsec'],dum['kfac'],dum['scal'],dum['addnevents'],dum["pileup"])
+      dataContainer = self.ut_.DefineSamples(dum['Nam'],dum['typ'],dum['ind'],dum['draw'],dum['red'],dum['tot'],dum['intL'],
+                                             dum['lum'],dum['xsec'],dum['kfac'],dum['scal'],dum['version'],dum['addnevents'],
+                                             dum["pileup"])
       if("json" in dum and dum["json"] != ""):
         print "Using json %s " % dum["json"]
         defineJsonFilter(dum["json"], dataContainer)
@@ -268,14 +313,16 @@ class configProducer:
     self.add_files()
     self.ut_.SetTypeRun(self.type_,self.conf_.histfile)
     for dum in self.conf_.confs:
-      dataContainer = self.ut_.DefineSamples(dum['Nam'],dum['typ'],dum['ind'],dum['draw'],dum['red'],dum['tot'],dum['intL'],dum['lum'],dum['xsec'],dum['kfac'],dum['scal'],dum['addnevents'],dum["pileup"])
+      dataContainer = self.ut_.DefineSamples(dum['Nam'],dum['typ'],dum['ind'],dum['draw'],dum['red'],dum['tot'],dum['intL'],
+                                             dum['lum'],dum['xsec'],dum['kfac'],dum['scal'],dum['version'],dum['addnevents'],
+                                             dum["pileup"])
       if("json" in dum and dum["json"] != ""):
         defineJsonFilter(dum["json"], dataContainer)
       if("evlist" in dum and dum["evlist"] != ""):
         defineEvList(dum["evlist"], dataContainer)
 
   def eosmount(self):
-      from makeFilelist import eos
+      eos = "/afs/cern.ch/project/eos/installation/pro/bin/eos.select"
       mp = os.path.join(os.getcwd(),"eos")
       ret,out=commands.getstatusoutput("(mount | grep %s) || (%s -b fuse mount %s)" % (mp,eos,mp))
       print out
@@ -635,7 +682,13 @@ class configProducer:
           self.addToPrintList(struct,name)
           ## print val, str(type(struct.__getattribute__(name)))
           try:
-	    if ".root" in val and not "/castor" in val and not os.path.isfile(val): sys.exit("No File found - %s, check the line %s"%(val,line))
+	    if ".root" in val and not "/castor" in val and not os.path.isfile(val): 
+	    	if ',' in val:
+					ele = val.split(",")
+					for v in ele:
+						if '.root' in v and not "/castor" in v and not os.path.isfile(v):
+							sys.exit("No File found - %s, check the line %s"%(v,line))
+	    	else: sys.exit("No File found - %s, check the line %s"%(v,line))
       	    if "," in val or "vector<" in str(type(struct.__getattribute__(name))):
 	     ele = val.split(",")
              value_type = type( type(struct.__getattribute__(name))(1)[0] )
@@ -741,7 +794,8 @@ class configProducer:
   def read_input_files_reduce(self,line):
     values = { "CaDir" : "","DcDir" : "","EosDir":"", "Dir" : "", "typ" : -1, "Fil" : "",
                "Nam":"default","draw":-999,"ind":-999,"tot":0,"red":-999,"lum":1.0,"xsec":-1.0,"kfac":1.0,
-               "scal":1.0,"json":"","evlist":"","pileup":"","intL":1.,"addnevents":0,
+               "scal":1.0,"json":"","evlist":"","pileup":"","intL":1.,"addnevents":0, "site":"cern.ch",
+               "version":0
                }; 
     # We have one of the file def lines
     split_line = line.split()
@@ -768,7 +822,7 @@ class configProducer:
     self.conf_.confs.append(values.copy())
       
     if cas_directory != '':
-      ca_files = makeCaFiles(cas_directory,self.njobs_,self.jobId_)
+      ca_files = makeCaFiles(cas_directory,self.njobs_,self.jobId_,site=values["site"])
       for file_s in ca_files:
 	if file_s[1]:self.conf_.files.append((file_s[0],fi_type))
 	else	    :self.conf_.files.append((None,fi_type))
@@ -788,7 +842,7 @@ class configProducer:
   # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   def read_input_files_loop(self,line):
     print "read_input_files_loop"
-    map_c = {"typ":99999,"Nam":"default","draw":-999,"ind":-999,"tot":0,"red":-999,"lum":1.0,"xsec":-1.0,"kfac":1.0,"scal":1.0,"json":"","evlist":"","pileup":"",
+    map_c = {"typ":99999,"Nam":"default","draw":-999,"ind":-999,"tot":0,"red":-999,"lum":1.0,"xsec":-1.0,"kfac":1.0,"scal":1.0,"json":"","evlist":"","pileup":"","version":0,
              "maxfiles":-1}
     #map_c["tot"]=-1
     map_c["addnevents"]=0
