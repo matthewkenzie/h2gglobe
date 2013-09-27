@@ -11,6 +11,7 @@ parser.add_option("-M","--Method",dest="methods",default=[],action="append")
 parser.add_option("-q","--qqbarPoints",dest="qqbarPoints",default="0.0,0.25,0.5,0.75,1.0")
 parser.add_option("-c","--cosThetaBoundaries",dest="cTbounds",default="0.0,0.2,0.375,0.55,0.75,1.")
 parser.add_option("-D","--outDir",default="./")
+parser.add_option("-n","--name",default="")
 parser.add_option("-u","--unblind",action="store_true",default=False)
 parser.add_option("-b","--isBatch",action="store_true",default=False)
 (options,args)=parser.parse_args()
@@ -326,12 +327,12 @@ def doChannelCompatiblity():
   canv.Print(options.outDir+'/modIndepHist.pdf')
   canv.Print(options.outDir+'/modIndepHist.png')
   
-  graphSM.SetName('ChannelCompSM')
-  graphSME.SetName('ChannelCompSMerr')
-  graphGravGG.SetName('ChannelCompGravGG')
-  graphGravQQ.SetName('ChannelCompGravQQ')
-  graphGrav50GG50QQ.SetName('ChannelCompGrav50GG50QQ')
-  graphData.SetName('ChannelCompData')
+  graphSM.SetName('%sChannelCompSM'%options.name)
+  graphSME.SetName('%sChannelCompSMerr'%options.name)
+  graphGravGG.SetName('%sChannelCompGravGG'%options.name)
+  graphGravQQ.SetName('%sChannelCompGravQQ'%options.name)
+  graphGrav50GG50QQ.SetName('%sChannelCompGrav50GG50QQ'%options.name)
+  graphData.SetName('%sChannelCompData'%options.name)
   outf.cd()
   graphSM.Write()
   graphSME.Write()
@@ -346,7 +347,7 @@ def doChannelCompatiblity():
   if options.unblind: 
     graphData.Write()
     histData.Write()
-  canv.SetName('ChannelComp')
+  canv.SetName('%sChannelComp'%options.name)
   canv.Write()
 
 def doSeparation():
@@ -628,6 +629,9 @@ if options.datfile:
     if len(opts)>5:
       ymin=float(opts[4])
       ymax=float(opts[5])
+    if len(opts)>6:
+      options.outDir = opts[6].strip('\n')
+      options.name = opts[7].strip('\n')
     if meth=='ChannelCompatibility': doChannelCompatiblity()
     if meth=='Separation': doSeparation()
     if meth=='qqbar': doqqbar()
