@@ -619,7 +619,7 @@ def doqqbarComb():
 if options.datfile:
   df = open(options.datfile)
   for line in df.readlines():
-    if line.startswith('#'): continue
+    if line.startswith('#') or line=='\n': continue
     opts = line.split(':')
     print opts
     meth = opts[0]
