@@ -237,7 +237,7 @@ void MvaAnalysis::Init(LoopAll& l)
     if(doKFactorSmear) {
         // kFactor efficiency
         std::cerr << __LINE__ << std::endl; 
-        kFactorSmearer = new KFactorSmearer( kfacHist );
+        kFactorSmearer = new KFactorSmearer( kfacHist, l.normalizer() );
         kFactorSmearer->name("kFactor");
         kFactorSmearer->init();
         genLevelSmearers_.push_back(kFactorSmearer);
@@ -246,7 +246,7 @@ void MvaAnalysis::Init(LoopAll& l)
     if(doPdfWeightSmear) {
         // PdfWeights efficiency (For now only consider QCD Scale Uncertainty 
         std::cerr << __LINE__ << std::endl; 
-        pdfWeightSmearer = new PdfWeightSmearer( pdfWeightHist,"up","down");
+        pdfWeightSmearer = new PdfWeightSmearer( pdfWeightHist,l.normalizer(),"up","down");
         pdfWeightSmearer->name("pdfWeight");
         pdfWeightSmearer->init();
         genLevelSmearers_.push_back(pdfWeightSmearer);
@@ -255,7 +255,7 @@ void MvaAnalysis::Init(LoopAll& l)
     if(doInterferenceSmear) {
         // interference efficiency
         std::cerr << __LINE__ << std::endl; 
-        interferenceSmearer = new InterferenceSmearer(2.5e-2,0.);
+        interferenceSmearer = new InterferenceSmearer( l.normalizer(),2.5e-2,0.);
         genLevelSmearers_.push_back(interferenceSmearer);
     }
 
@@ -372,7 +372,7 @@ void MvaAnalysis::Init(LoopAll& l)
     l.tmvaReaderID_UCSD->BookMVA("Gradient"      ,photonLevelMvaUCSD.c_str()  );
     l.tmvaReader_dipho_UCSD->BookMVA("Gradient"  ,eventLevelMvaUCSD.c_str()   );
     cout << "Booking MVA..." << endl;
-    if (dataIs2011){
+    if (run7TeV4Xanalysis){
         // MIT ID MVA
         l.tmvaReaderID_MIT_Barrel->BookMVA("AdaBoost",photonLevelMvaMIT_EB.c_str());
         l.tmvaReaderID_MIT_Endcap->BookMVA("AdaBoost",photonLevelMvaMIT_EE.c_str());

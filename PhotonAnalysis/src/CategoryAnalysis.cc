@@ -153,7 +153,7 @@ void CategoryAnalysis::Init(LoopAll& l)
     if(doKFactorSmear) {
         // kFactor efficiency
         std::cerr << __LINE__ << std::endl; 
-        kFactorSmearer = new KFactorSmearer( kfacHist );
+        kFactorSmearer = new KFactorSmearer( kfacHist, l.normalizer() );
         kFactorSmearer->name("kFactor");
         kFactorSmearer->init();
         genLevelSmearers_.push_back(kFactorSmearer);
@@ -161,7 +161,7 @@ void CategoryAnalysis::Init(LoopAll& l)
     if(doPdfWeightSmear) {
         // PdfWeights efficiency (For now only consider QCD Scale Uncertainty 
         std::cerr << __LINE__ << std::endl; 
-        pdfWeightSmearer = new PdfWeightSmearer( pdfWeightHist,"up","down");
+        pdfWeightSmearer = new PdfWeightSmearer( pdfWeightHist,l.normalizer(),"up","down");
         pdfWeightSmearer->name("pdfWeight");
         pdfWeightSmearer->init();
         genLevelSmearers_.push_back(pdfWeightSmearer);
@@ -169,7 +169,7 @@ void CategoryAnalysis::Init(LoopAll& l)
     if(doInterferenceSmear) {
         // interference efficiency
         std::cerr << __LINE__ << std::endl; 
-        interferenceSmearer = new InterferenceSmearer(2.5e-2,0.);
+        interferenceSmearer = new InterferenceSmearer(l.normalizer(),2.5e-2,0.);
         genLevelSmearers_.push_back(interferenceSmearer);
     }
 
@@ -225,17 +225,17 @@ void CategoryAnalysis::Init(LoopAll& l)
     l.tmvaReader_dipho_UCSD->BookMVA("Gradient"  ,eventLevelMvaUCSD.c_str()   );
     // New ID MVA
     if( photonLevelNewIDMVA_EB != "" && photonLevelNewIDMVA_EE != "" ) {
-    l.tmvaReaderID_Single_Barrel->BookMVA("AdaBoost",photonLevelNewIDMVA_EB.c_str());
-    l.tmvaReaderID_Single_Endcap->BookMVA("AdaBoost",photonLevelNewIDMVA_EE.c_str());
+	l.tmvaReaderID_Single_Barrel->BookMVA("AdaBoost",photonLevelNewIDMVA_EB.c_str());
+	l.tmvaReaderID_Single_Endcap->BookMVA("AdaBoost",photonLevelNewIDMVA_EE.c_str());
     } else { 
-    assert( dataIs2011 );
+	assert( run7TeV4Xanalysis );
     }
     // MIT 
     if( photonLevelMvaMIT_EB != "" && photonLevelMvaMIT_EE != "" ) {
-    l.tmvaReaderID_MIT_Barrel->BookMVA("AdaBoost",photonLevelMvaMIT_EB.c_str());
-    l.tmvaReaderID_MIT_Endcap->BookMVA("AdaBoost",photonLevelMvaMIT_EE.c_str());
+	l.tmvaReaderID_MIT_Barrel->BookMVA("AdaBoost",photonLevelMvaMIT_EB.c_str());
+	l.tmvaReaderID_MIT_Endcap->BookMVA("AdaBoost",photonLevelMvaMIT_EE.c_str());
     } else {
-    assert( ! dataIs2011 );
+	assert( ! run7TeV4Xanalysis );
     }
     l.tmvaReader_dipho_MIT->BookMVA("Gradient"   ,eventLevelMvaMIT.c_str()    );
     // ----------------------------------------------------------------------//
@@ -317,7 +317,7 @@ bool CategoryAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float weight, TLor
 	}
     }
 
-    if(includeVHmet && !dataIs2011) {
+    if(includeVHmet && !run7TeV4Xanalysis) {
 	//	    std::cout << "+++PFMET UNCORR " << l.met_pfmet << std::endl;
 	if(!isSyst) VHmetevent=METTag2012B(l, diphotonVHmet_id, VHmetevent_cat, &smeared_pho_energy[0], met_sync, true, phoidMvaCut, false); 
 	if(isSyst)  VHmetevent=METTag2012B(l, diphotonVHmet_id, VHmetevent_cat, &smeared_pho_energy[0], met_sync, true, phoidMvaCut, true); 
@@ -410,7 +410,7 @@ bool CategoryAnalysis::AnalyseEvent(LoopAll& l, Int_t jentry, float weight, TLor
     mass = 0.;
 
     // Kinematic preselection (pt and eta cuts only)
-    int diphoton_id_kinonly = l.DiphotonMITPreSelection(leadEtCut,subleadEtCut,phoidMvaCut,applyPtoverM, &smeared_pho_energy[0], -1, false, true);
+    int diphoton_id_kinonly = l.DiphotonMITPreSelection(leadEtCut,subleadEtCut,phoidMvaCut,applyPtoverM, &smeared_pho_energy[0], false, true, -100, -1, false);
     if (diphoton_id_kinonly > -1 ) {
       passKin = true;
       diphoton_index_kinonly = std::make_pair( l.dipho_leadind[diphoton_id_kinonly],  l.dipho_subleadind[diphoton_id_kinonly] );

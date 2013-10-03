@@ -58,9 +58,10 @@ class LoopAll {
   std::vector<Cut> cutContainer;
   //std::vector<TreeContainer> treeContainer;	 
   std::map<std::string, std::vector<TreeContainer> > treeContainer;	 
-
+  
   RooContainer *rooContainer;
-  Normalization_8TeV *signalNormalizer;
+  int sqrtS;
+  Normalization_8TeV * normalizer();
   
   LoopAll(TTree *tree=0);
   virtual ~LoopAll();
@@ -571,7 +572,8 @@ int DiphotonCiCSelection( phoCiCIDLevel LEADCUTLEVEL = phoLOOSE,
                           std::vector<int> cutsbycat=std::vector<int>(0));
 
 
-int DiphotonMITPreSelection(Float_t leadPtMin, Float_t subleadPtMin, Float_t phoidMvaCut, bool applyPtoverM, float *pho_energy_array=0, int fixedvtx=-1, bool split=false, bool kinonly=false, std::vector<bool> veto_indices=std::vector<bool>(false));
+int DiphotonMITPreSelection(Float_t leadPtMin, Float_t subleadPtMin, Float_t phoidMvaCut, bool applyPtoverM, float *pho_energy_array=0, bool vetodipho=false, bool kinonly=false, float dipho_BDT_Cut=-100,int fixedvtx=-1, bool split=false, std::vector<bool> veto_indices=std::vector<bool>(false));
+float DiphotonMITPreSelectionPerDipho(int idipho, Float_t leadPtMin, Float_t subleadPtMin, Float_t phoidMvaCut, bool applyPtoverM, float *pho_energy_array=0, int fixedvtx=-1, bool split=false, bool kinonly=false, std::vector<bool> veto_indices=std::vector<bool>(false));
 int DiphotonMITPreSelection2011(Float_t leadPtMin, Float_t subleadPtMin, Float_t phoidMvaCut, bool applyPtoverM, float *pho_energy_array=0, bool kinonly=false);
 
 /** for a photon index, applies all levels of cuts and returns the
@@ -745,6 +747,8 @@ Int_t dipho_leadind[MAX_DIPHOTONS];
 Int_t dipho_subleadind[MAX_DIPHOTONS];
 Int_t dipho_vtxind[MAX_DIPHOTONS];
 Float_t dipho_sumpt[MAX_DIPHOTONS];
+Bool_t dipho_sel[MAX_DIPHOTONS];
+Float_t dipho_BDT[MAX_DIPHOTONS];
 Bool_t pho_genmatched[MAX_PHOTONS];
 Float_t pho_regr_energy_otf[MAX_PHOTONS];
 Float_t pho_regr_energyerr_otf[MAX_PHOTONS];
@@ -1196,8 +1200,6 @@ void doJetMatching(TClonesArray & reco, TClonesArray & gen, Bool_t * match_flag,
 		   Float_t * match_pt, Float_t * match_dr, Float_t maxDr=0.4 );
 
 std::pair<int, int> Select2HighestPtJets(TLorentzVector& leadpho, TLorentzVector& subleadpho, Bool_t * jetid_flags=0);
-
-
 int RescaleJetEnergy(bool force=false);
 
 //Moriond2012
@@ -1268,6 +1270,8 @@ void VHNewLeptonCategorization(bool & VHlep1event, bool & VHlep2event, int dipho
 void VHTwoMuonsEvents(bool & VHlep1event, bool & VHlep2event, int & diphotonVHlep_id, int & muVtx, float* smeared_pho_energy, float leadEtVHlepCut, float subleadEtVHlepCut, bool applyPtoverM);
 void VHTwoElectronsEvents(bool & VHlep1event, bool & VHlep2event, int & diphotonVHlep_id, int & elVtx, float* smeared_pho_energy, float leadEtVHlepCut, float subleadEtVHlepCut, bool applyPtoverM);
  
+private:
+  Normalization_8TeV *signalNormalizer;
 
 #ifdef NewFeatures
 #include "Marco/plotInteractive_h.h"
