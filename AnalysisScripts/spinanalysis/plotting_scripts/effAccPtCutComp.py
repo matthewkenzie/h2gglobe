@@ -1,6 +1,7 @@
 import ROOT as r
 
 import sys
+import array
 
 tf = r.TFile(sys.argv[1])
 tf_truth = r.TFile(sys.argv[2])
@@ -23,11 +24,19 @@ r.TH1.SetDefaultSumw2()
 smEvs = {}
 gravEvs = {}
 
+bins = array.array('f',[0.0,0.2,0.375,0.55,0.75,1.0])
+
 for cut in cuts:
-	smEvs[cut] = r.TH1F('sm%d'%cut,'',20,0,1)
-	gravEvs[cut] = r.TH1F('grav%d'%cut,'',20,0,1)
-smTruth = r.TH1F('smTruth','',20,0,1)
-gravTruth = r.TH1F('gravTruth','',20,0,1)
+	smEvs[cut] = r.TH1F('sm%d'%cut,'',len(bins)-1,bins)
+	gravEvs[cut] = r.TH1F('grav%d'%cut,'',len(bins)-1,bins)
+smTruth = r.TH1F('smTruth','',len(bins)-1,bins)
+gravTruth = r.TH1F('gravTruth','',len(bins)-1,bins)
+
+#for cut in cuts:
+#	smEvs[cut] = r.TH1F('sm%d'%cut,'',20,0,1)
+#	gravEvs[cut] = r.TH1F('grav%d'%cut,'',20,0,1)
+#smTruth = r.TH1F('smTruth','',20,0,1)
+#gravTruth = r.TH1F('gravTruth','',20,0,1)
 
 for tree in smTrees:
 	for event in range(tree.GetEntries()):
@@ -36,8 +45,9 @@ for tree in smTrees:
 			if cut<0.:
 				smEvs[cut].Fill(r.TMath.Abs(tree.costheta_cs),tree.evweight)
 			else:
-				higgs_pt = r.TLorentzVector(tree.higgs_px,tree.higgs_py,tree.higgs_pz,tree.higgs_E).Pt()
-				if higgs_pt<=cut:
+				#higgs_pt = r.TLorentzVector(tree.higgs_px,tree.higgs_py,tree.higgs_pz,tree.higgs_E).Pt()
+				#if higgs_pt<=cut:
+				if tree.myVBFLeadJPt<=cut:
 					smEvs[cut].Fill(r.TMath.Abs(tree.costheta_cs),tree.evweight)
 
 
