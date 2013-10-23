@@ -66,6 +66,8 @@ class PdfModelBuilder {
     RooAbsPdf* getKeysPdf(string prefix);
     RooAbsPdf* getPdfFromFile(string &prefix);
 
+		void printParams();
+
   private:
    
     vector<string> recognisedPdfTypes;

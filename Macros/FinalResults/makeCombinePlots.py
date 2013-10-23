@@ -71,7 +71,7 @@ def pvalPlot(allVals):
   canv.SetLogy(True)
   mg = r.TMultiGraph()
   if not options.legend: leg = r.TLegend(0.6,0.12,0.89,0.4)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetFillColor(0)
 
   # make graphs from values
@@ -93,8 +93,8 @@ def pvalPlot(allVals):
     dummyHist.SetMinimum(mg.GetYaxis().GetXmin())
     dummyHist.SetMaximum(mg.GetYaxis().GetXmax())
   else:
-    dummyHist.SetMinimum(float(options.yaxis.split(';')[0]))
-    dummyHist.SetMaximum(float(options.yaxis.split(';')[1]))
+    dummyHist.SetMinimum(float(options.yaxis.split(',')[0]))
+    dummyHist.SetMaximum(float(options.yaxis.split(',')[1]))
     
   dummyHist.SetLineColor(0)
   dummyHist.SetStats(0)
@@ -115,7 +115,7 @@ def pvalPlot(allVals):
     lines[i].SetLineColor(r.kRed)
     labels.append(r.TLatex(110 + 2, y * 1.1, "%d #sigma" % (i+1)))
     labels[i].SetTextAlign(11);
-    if y<=mg.GetYaxis().GetXmax() and y>=mg.GetYaxis().GetXmin():
+    if y<=dummyHist.GetYaxis().GetXmax() and y>=dummyHist.GetYaxis().GetXmin():
       lines[i].Draw('SAME')
       labels[i].Draw('SAME')
 
@@ -236,15 +236,17 @@ def limitPlot(allVals):
     twoSigma = r.TGraphAsymmErrors()
     point_counter=0
     for j in range(len(values)):
-      if (j%6==0):
+      itVal = 5 if options.expected else 6
+      if (j%itVal==0):
         mh = values[j][0]
         down95 = values[j][1]
         down68 = values[j+1][1]
         median = values[j+2][1]
         up68 = values[j+3][1]
         up95 = values[j+4][1]
-        obs = values[j+5][1]
-        graph.SetPoint(point_counter,mh,obs)
+        if not options.expected:
+          obs = values[j+5][1]
+          graph.SetPoint(point_counter,mh,obs)
         exp.SetPoint(point_counter,mh,median)
         oneSigma.SetPoint(point_counter,mh,median)
         oneSigma.SetPointError(point_counter,0,0,abs(median-down68),abs(up68-median))

@@ -303,6 +303,11 @@ int main(int argc, char* argv[]){
       choices.insert(pair<string,int>(*funcType,cache_order));
       pdfs.insert(pair<string,RooAbsPdf*>(Form("%s%d",funcType->c_str(),cache_order),cache_pdf));
 
+
+			cout << "----------- DONE ----------" << endl;
+			pdfsModel.printParams();
+			cout << "---------------------------" << endl;
+
       // Now run loop to determine functions inside envelope
       if (true/*saveMultiPdf*/){
         chi2=0.;
@@ -365,6 +370,10 @@ int main(int argc, char* argv[]){
       fprintf(resFile,"%15s & %d & %5.2f & %5.2f \\\\\n",funcType->c_str(),cache_order+1,chi2,prob);
       choices_envelope.insert(pair<string,std::vector<int> >(*funcType,pdforders));
       }
+
+			cout << "----------- DONE ----------" << endl;
+			pdfsModel.printParams();
+			cout << "---------------------------" << endl;
     }
 
     fprintf(resFile,"\\hline\n");

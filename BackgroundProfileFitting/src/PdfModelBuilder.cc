@@ -203,8 +203,8 @@ RooAbsPdf* PdfModelBuilder::getExponential(string prefix, int order){
   
   RooArgList coefList;
   for (int i=0; i<order; i++){
-    double start=-2.;
-    double low=-10.;
+    double start=-1.;
+    double low=-2.;
     double high=0.;
     if (order>0){
       start=-0.001/double(i);
@@ -240,7 +240,7 @@ RooAbsPdf* PdfModelBuilder::getPowerLawSingle(string prefix, int order){
     for (int i=1; i<=npows; i++){
       string name =  Form("%s_p%d",prefix.c_str(),i);
       string ename =  Form("%s_e%d",prefix.c_str(),i);
-      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),-8.7,-20.,0.1)));
+      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),TMath::Max(-10.,-0.5*(i+1)),-10.,0.1)));
       utilities.insert(pair<string,RooAbsPdf*>(ename, new RooPower(ename.c_str(),ename.c_str(),*obs_var,*params[name])));
       pows->add(*utilities[ename]);
     }
@@ -347,7 +347,7 @@ RooAbsPdf* PdfModelBuilder::getExponentialSingle(string prefix, int order){
     for (int i=1; i<=nexps; i++){
       string name =  Form("%s_p%d",prefix.c_str(),i);
       string ename =  Form("%s_e%d",prefix.c_str(),i);
-      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),-0.02,-25.,-0.00001)));
+      params.insert(pair<string,RooRealVar*>(name, new RooRealVar(name.c_str(),name.c_str(),TMath::Max(-2.,-0.02*(i+1)),-2.,-0.00001)));
       utilities.insert(pair<string,RooAbsPdf*>(ename, new RooExponential(ename.c_str(),ename.c_str(),*obs_var,*params[name])));
       exps->add(*utilities[ename]);
     }
@@ -715,4 +715,11 @@ void PdfModelBuilder::saveWorkspace(string filename){
 void PdfModelBuilder::saveWorkspace(TFile *file){
   file->cd();
   wsCache->Write();
+}
+
+void PdfModelBuilder::printParams(){
+	for (map<string,RooRealVar*>::iterator it=params.begin(); it!=params.end(); it++){
+		cout << it->first << " : ";
+		it->second->Print();
+	}
 }

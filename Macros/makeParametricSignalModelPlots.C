@@ -603,6 +603,7 @@ pair<double,double> datEvents(RooWorkspace *work, int m_hyp, int cat, pair<doubl
 void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, map<string,double> sigEffs, map<string,double> fwhms, map<string,double> sobVals, string outfname, int mh, bool doBkgAndData, bool splitVH){
 
   TString catName[nCats+1];
+	/*
   catName[0] = "Untagged 0";
   catName[1] = "Untagged 1";
   catName[2] = "Untagged 2";
@@ -613,6 +614,23 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   catName[7] = "Electron Tag";
   catName[8] = "MET Tag";
   catName[9] = "Combined";
+	*/
+	catName[0] = "Category 0";
+	catName[1] = "Category 1";
+	catName[2] = "Category 2";
+	catName[3] = "Category 3";
+	catName[4] = "Category 4";
+	catName[5] = "Category 5";
+	catName[6] = "Category 6";
+	catName[7] = "Category 7";
+	catName[8] = "Category 8";
+	catName[9] = "Category 9";
+	catName[10] = "Category 10";
+	catName[11] = "Category 11";
+	catName[12] = "Category 12";
+	catName[13] = "Category 13";
+	catName[14] = "Category 14";
+	catName[15] = "Combined";
 
   const int nprocs = splitVH ? 5 : 4;
 
@@ -653,13 +671,13 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   TPad *Width;
   TPad *SOB;
   if (doBkgAndData) {
-    canv = new TCanvas("canv","canv",1,1,3200,1552);
+    canv = new TCanvas("canv","canv",1,1,4200,2588);
     Plots = new TPad("Plots","Plots",0.,0.,0.5,1.);
     Width = new TPad("Width","Width",0.5,0.,0.75,1.);
     SOB = new TPad("SOB","SOB",0.75,0.,1.,1.);
   }
   else {
-    canv = new TCanvas("canv","canv",1,1,2400,1552);
+    canv = new TCanvas("canv","canv",1,1,3200,2588);
     Plots = new TPad("Plots","Plots",0.,0.,0.667,1.);
     Width = new TPad("Width","Width",0.667,0.,1.,1.);
   }
@@ -687,7 +705,7 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
 
   for (int i=0;i<nCats+1;++i) dummy->GetYaxis()->SetBinLabel(nCats+1-i,catName[i]);
   dummy->GetYaxis()->SetTickLength(0);
-  dummy->GetXaxis()->SetTitle("Signal Fraction (%)");
+  dummy->GetXaxis()->SetTitle("Signal Composition (%)");
   dummy->GetXaxis()->SetNdivisions(510);
   dummy->GetXaxis()->SetLabelFont(42);
   dummy->GetXaxis()->SetLabelSize(0.045);
@@ -695,7 +713,7 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   dummy->GetXaxis()->SetTitleOffset(0.95);
   dummy->GetXaxis()->SetTitleFont(42);
   dummy->GetYaxis()->SetNdivisions(510);
-  dummy->GetYaxis()->SetLabelSize(0.035);
+  dummy->GetYaxis()->SetLabelSize(0.045);
   dummy->GetYaxis()->SetTitleSize(0.045);
   dummy->GetYaxis()->SetTitleOffset(1.1);
   dummy->GetYaxis()->SetTitleFont(42);
@@ -783,6 +801,7 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
     tex_m->DrawLatex(0.78,0.84+0.025,"ttH");
   }
 
+	/*
   TLine *line = new TLine(0,nCats-3.5,100,nCats-3.5);
   line->SetLineColor(kBlack);
   line->SetLineWidth(2);
@@ -794,10 +813,11 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   line2->SetLineWidth(2);
   line2->SetLineStyle(2);
   line2->Draw();
+	*/
 
-  TLine *line3 = new TLine(0,nCats-8.5,100,nCats-8.5);
+  TLine *line3 = new TLine(0,0.5,100,0.5);
   line3->SetLineColor(kBlack);
-  line3->SetLineWidth(4);
+  line3->SetLineWidth(3);
   line3->SetLineStyle(9);
   line3->Draw();
 
@@ -887,7 +907,8 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   pave->Draw();
   tex_m->SetTextSize(0.045);
   tex_m->DrawLatex(0.67,0.865,"FWHM/2.35");
-  
+ 
+ 	/*
   TLine *sline = new TLine(-3.,nCats-3.5,3.,nCats-3.5);
   sline->SetLineColor(kBlack);
   sline->SetLineWidth(2);
@@ -899,16 +920,17 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
   sline2->SetLineWidth(2);
   sline2->SetLineStyle(2);
   sline2->Draw();
+	*/
 
-  TLine *sline3 = new TLine(-3.,nCats-8.5,3.,nCats-8.5);
+  TLine *sline3 = new TLine(-3.,0.5,3.,0.5);
   sline3->SetLineColor(kBlack);
-  sline3->SetLineWidth(4);
+  sline3->SetLineWidth(3);
   sline3->SetLineStyle(9);
   sline3->Draw();
 
   TLine *sline4 = new TLine(0.,-0.5,0.,nCats+0.5);
   sline4->SetLineColor(kBlack);
-  sline4->SetLineWidth(3);
+  sline4->SetLineWidth(2);
   sline4->Draw();
 
   Width->RedrawAxis();
@@ -976,6 +998,7 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
     tex_m->SetTextSize(0.045);
     tex_m->DrawLatex(0.22,0.865,"S/B in FWHM");
 
+		/*
     TLine *sbline = new TLine(0.,nCats-3.5,0.4,nCats-3.5);
     sbline->SetLineColor(kBlack);
     sbline->SetLineWidth(2);
@@ -987,10 +1010,11 @@ void makeSignalCompositionPlot(int nCats, map<string,vector<double> > sigVals, m
     sbline2->SetLineWidth(2);
     sbline2->SetLineStyle(2);
     sbline2->Draw();
+		*/
 
-    TLine *sbline3 = new TLine(0.,nCats-8.5,0.4,nCats-8.5);
+    TLine *sbline3 = new TLine(0.,0.5,0.4,0.5);
     sbline3->SetLineColor(kBlack);
-    sbline3->SetLineWidth(4);
+    sbline3->SetLineWidth(3);
     sbline3->SetLineStyle(9);
     sbline3->Draw();
 
@@ -1100,6 +1124,7 @@ void makeParametricSignalModelPlots(string sigFitFileName, string outPathName, i
     labels.insert(pair<string,string>("all","All Categories Combined"));
   }
   else {
+		/*
     if (isMassFac){
       labels.insert(pair<string,string>("cat0","BDT_{#gamma#gamma} >= 0.91"));
       labels.insert(pair<string,string>("cat1","0.79 <= BDT_{#gamma#gamma} <= 0.91"));
@@ -1118,6 +1143,10 @@ void makeParametricSignalModelPlots(string sigFitFileName, string outPathName, i
     labels.insert(pair<string,string>("cat7","BDT_{#gamma#gamma} >= -0.05 Electron Tag")); 
     labels.insert(pair<string,string>("cat8","BDT_{#gamma#gamma} >= -0.05 MET Tag")); 
     labels.insert(pair<string,string>("all","All Categories Combined"));
+		*/
+		for (int cat=0; cat<ncats; cat++){
+			labels.insert(pair<string,string>(Form("cat%d",cat),Form("Category %d",cat)));
+		}
   }
   if (spin){
     labels.clear();
@@ -1143,8 +1172,8 @@ void makeParametricSignalModelPlots(string sigFitFileName, string outPathName, i
     labels.insert(pair<string,string>("cat19","#splitline{|#eta|_{max} > 1.44, R_{9min} < 0.94}{0.75 < |cos(#theta*)| < 0.1}"));
     labels.insert(pair<string,string>("all","All Categories Combined"));
   }
-  /*
   else {
+  /*
     labels.insert(pair<string,string>("cat0","BDT >= 0.88"));
     labels.insert(pair<string,string>("cat1","0.71 <= BDT <= 0.88"));
     labels.insert(pair<string,string>("cat2","0.50 <= BDT <= 0.71"));
@@ -1152,8 +1181,11 @@ void makeParametricSignalModelPlots(string sigFitFileName, string outPathName, i
     labels.insert(pair<string,string>("cat4","BDT >= -0.05 Tight VBF"));
     labels.insert(pair<string,string>("cat5","BDT >= -0.05 Loose VBF")); 
     labels.insert(pair<string,string>("all","All Categories Combined"));
-  }
   */
+		for (int cat=0; cat<ncats; cat++){
+			labels.insert(pair<string,string>(Form("cat%d",cat),Form("Category %d",cat)));
+		}
+  }
 
   map<string,RooDataSet*> dataSets;
   map<string,RooAddPdf*> pdfs;

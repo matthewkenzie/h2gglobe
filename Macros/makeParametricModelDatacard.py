@@ -34,28 +34,38 @@ inFile = r.TFile.Open(options.infilename)
 outFile = open(options.outfilename,'w')
 bkgProcs = ['bkg_mass']
 vbfProcs = ['qqH']
-incCats = [0,1,2,3]
-dijetCats = [4,5]
-muonCat = [6]
-eleCat = [7]
-metCat = [8]
+incCats = [0,1,2,3,4]
+dijetCats = [5,6,7]
+muonCat = [8]
+eleCat = [9]
+metCat = [10]
+ttLepCat = [11]
+ttHadCat = [12]
+vhLepCat = [13]
+vhHadCat = [14]
 options.procs += ',bkg_mass'
 options.procs = [combProc[p] for p in options.procs.split(',')]
+print options.procs
 options.toSkip = options.toSkip.split(',')
 options.photonSystCats = options.photonSystCats.split(',')
 inWS = inFile.Get('cms_hgg_workspace')
 intL = inWS.var('IntLumi').getVal()
 
 # info = [file,workspace,name]
-dataFile = 'hgg.inputbkgdata_%dTeV_MVA.root'%sqrts
-dataWS = 'cms_hgg_workspace'
-bkgFile = 'hgg.inputbkgdata_%dTeV_MVA.root'%sqrts
-bkgWS = 'cms_hgg_workspace'
-sigFile = 'hgg.inputsig_%dTeV_MVA.root'%sqrts
+dataFile = 'CMS-HGG_massfacmva_legacy_v1_multipdfws.root'
+dataWS = 'multipdf'
+bkgFile = 'CMS-HGG_massfacmva_legacy_v1_multipdfws.root'
+bkgWS = 'multipdf'
+#dataFile = 'CMS-HGG_massfacmva_legacy_v1.root'
+#dataWS = 'cms_hgg_workspace'
+#bkgFile = 'CMS-HGG_massfacmva_legacy_v1.root'
+#bkgWS = 'cms_hgg_workspace'
+sigFile = 'CMS-HGG_massfacmva_legacy_v1_sigfit.root'
 sigWS = 'wsig_%dTeV'%sqrts
 fileDetails = {}
 fileDetails['data_obs'] = [dataFile,dataWS,'roohist_data_mass_$CHANNEL']
-fileDetails['bkg_mass']	= [bkgFile,bkgWS,'pdf_data_pol_model_%dTeV_$CHANNEL'%sqrts]
+#fileDetails['bkg_mass']	= [bkgFile,bkgWS,'pdf_data_pol_model_%dTeV_$CHANNEL'%sqrts]
+fileDetails['bkg_mass']	= [bkgFile,bkgWS,'CMS_hgg_$CHANNEL_%dTeV_bkgshape'%sqrts]
 fileDetails['ggH'] 			= [sigFile,sigWS,'hggpdfsmrel_%dTeV_ggh_$CHANNEL'%sqrts]
 fileDetails['qqH'] 			= [sigFile,sigWS,'hggpdfsmrel_%dTeV_vbf_$CHANNEL'%sqrts]
 if splitVH:
@@ -115,9 +125,9 @@ if not options.isCutBased:
   globeSysts['regSig'] = 'n_sigmae'
 
   # QCD scale and PDF variations on PT-Y (replaced k-Factor PT variation) 
-  globeSysts['pdfWeight_QCDscale'] = 'n_sc_gf'
-  for pdfi in range(1,27):
-    globeSysts['pdfWeight_pdfset%d'%pdfi] = 'n_pdf_%d'%pdfi
+  #globeSysts['pdfWeight_QCDscale'] = 'n_sc_gf'
+  #for pdfi in range(1,27):
+    #globeSysts['pdfWeight_pdfset%d'%pdfi] = 'n_pdf_%d'%pdfi
 
 # vbf uncertainties (different for 7 TeV?)
 vbfSysts={}
@@ -180,14 +190,15 @@ def printPreamble():
 def printFileOptions():
 	print 'File opts...'
 	for typ, info in fileDetails.items():
-		outFile.write('shapes %-8s * %-30s %s:%s\n'%(typ,info[0],info[1],info[2]))
+		for c in range(options.ncats):
+			outFile.write('shapes %-8s %-10s %-30s %s:%s\n'%(typ,'cat%d_%dTeV'%(c,sqrts),info[0],info[1],info[2].replace('$CHANNEL','cat%d'%c)))
 	outFile.write('\n')
 
 def printObsProcBinLines():
 	print 'Rates...'
 	outFile.write('%-15s '%'bin')
 	for c in range(options.ncats):
-		outFile.write('cat%d '%c)
+		outFile.write('cat%d_%dTeV '%(c,sqrts))
 	outFile.write('\n')
 	
 	outFile.write('%-15s '%'observation')
@@ -199,7 +210,7 @@ def printObsProcBinLines():
 	for c in range(options.ncats):
 		for p in options.procs:
 			if '%s:%d'%(p,c) in options.toSkip: continue
-			outFile.write('cat%d '%c)
+			outFile.write('cat%d_%dTeV '%(c,sqrts))
 	outFile.write('\n')
 	
 	outFile.write('%-15s '%'process')
@@ -334,7 +345,10 @@ def printVbfSysts():
 						if c==len(incCats)+len(dijetCats)-1: 
 							outFile.write('%6.4f '%(1.+thisUncert))
 						else:
-							outFile.write('%6.4f '%((otherDiJetEvCount[p]-thisUncert*looseDiJetEvCount[p])/otherDiJetEvCount[p]))
+							try:	
+								outFile.write('%6.4f '%((otherDiJetEvCount[p]-thisUncert*looseDiJetEvCount[p])/otherDiJetEvCount[p]))
+							except:
+								outFile.write('0.0000 ')
 					else:
 						outFile.write('- ')
 			outFile.write('\n')

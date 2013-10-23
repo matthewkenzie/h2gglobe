@@ -560,7 +560,7 @@ void FinalModelConstruction::plotPdf(string outDir){
   for (int mh=mhLow_; mh<=mhHigh_; mh++){
     MH->setVal(mh);
 		// to get correct normlization need to manipulate with bins and range
-    extendPdf->plotOn(pdfPlot,Normalization(mass->getBins()/160.*(mass->getMax()-mass->getMin())/60.,RooAbsReal::RelativeExpected));
+    extendPdf->plotOn(pdfPlot,Normalization(mass->getBins()/120.*(mass->getMax()-mass->getMin())/60.,RooAbsReal::RelativeExpected));
   }
   pdfPlot->Draw();
   canv->Print(Form("%s/%s_cat%d_interp.pdf",outDir.c_str(),proc_.c_str(),cat_));
