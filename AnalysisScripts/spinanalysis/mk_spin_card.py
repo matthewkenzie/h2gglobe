@@ -12,6 +12,7 @@ parser.add_option("-C","--nKinCats",dest="kCats",type="int",default=4)
 parser.add_option("-n","--nameOfCard",dest="cardname")
 parser.add_option("-S","--sigfile",default="CMS-HGG_interpolated.root")
 parser.add_option("-B","--bkgfile",default="CMS-HGG.root")
+parser.add_option("--sqrtS",type="int",default=8)
 (options,args)=parser.parse_args()
 
 ncats=options.cTcats*options.kCats
@@ -26,7 +27,8 @@ card.write('shapes data_obs    *        %s cms_hgg_workspace:roohist_data_mass_$
 if not options.justGravGG and not options.justGravQQ:
   card.write('shapes ggH         *      %s cms_hgg_workspace:roohist_sig_ggh_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_ggh_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
   card.write('shapes qqH         *      %s cms_hgg_workspace:roohist_sig_vbf_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_vbf_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
-  card.write('shapes  VH         *      %s cms_hgg_workspace:roohist_sig_wzh_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_wzh_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
+  card.write('shapes  WH         *      %s cms_hgg_workspace:roohist_sig_wh_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_wh_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
+  card.write('shapes  ZH         *      %s cms_hgg_workspace:roohist_sig_zh_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_zh_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
   card.write('shapes ttH         *      %s cms_hgg_workspace:roohist_sig_tth_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_tth_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
 
 if not options.justSM and not options.justGravQQ:
@@ -35,7 +37,7 @@ if not options.justSM and not options.justGravQQ:
 if options.qqbarCard or options.justGravQQ: 
   card.write('shapes qqbarH_ALT  *      %s cms_hgg_workspace:roohist_sig_qq_grav_mass_m$MASS_$CHANNEL cms_hgg_workspace:roohist_sig_qq_grav_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
 
-card.write('shapes bkg         *        %s cms_hgg_workspace:pdf_data_pol_model_8TeV_$CHANNEL\n'%options.bkgfile) 
+card.write('shapes bkg         *        %s cms_hgg_workspace:pdf_data_pol_model_%dTeV_$CHANNEL\n'%(options.bkgfile,options.sqrtS)) 
 card.write('------------------------------\n')
 
 procs=[]
@@ -62,7 +64,7 @@ procs.append('bkg')
 iprocs.append('1')
 rates.append('1')
 
-lumi_err = '1.044'
+lumi_err = '1.044' if options.sqrtS==8 else '1.045'
 scale_ggH = '0.930/1.076'
 scale_qqH = '0.972/1.026'
 scale_VH  = '0.958/1.042'
