@@ -46,9 +46,10 @@ rates=[]
 
 # normal signals
 if not options.justGravGG and not options.justGravQQ:
-  procs += ['ggH','qqH','VH','ttH']
-  iprocs += ['0','-1','-2','-3']
-  rates += ['-1','-1','-1','-1']
+  #procs += ['ggH','qqH','VH','ttH']
+  procs += ['ggH','qqH','WH','ZH','ttH']
+  iprocs += ['0','-1','-2','-3','-4']
+  rates += ['-1','-1','-1','-1','-1']
 # ggh grav signal
 if not options.justSM and not options.justGravQQ:
   procs.append('ggH_ALT')
@@ -67,11 +68,15 @@ rates.append('1')
 lumi_err = '1.044' if options.sqrtS==8 else '1.045'
 scale_ggH = '0.930/1.076'
 scale_qqH = '0.972/1.026'
-scale_VH  = '0.958/1.042'
+#scale_VH  = '0.958/1.042'
+scale_WH  = '0.958/1.042'
+scale_ZH  = '0.958/1.042'
 scale_ttH = '0.920/1.080'
 pdf_ggH   = '0.918/1.076'
 pdf_qqH   = '0.992/1.003'
-pdf_VH    = '0.982/1.021'
+#pdf_VH    = '0.982/1.021'
+pdf_WH    = '0.982/1.021'
+pdf_ZH    = '0.982/1.021'
 pdf_ttH   = '0.906/1.041'
 
 binned_systs = ['E_res','E_scale','idEff','triggerEff','vtxEff','r9Eff','ptSpin']
@@ -122,10 +127,16 @@ for cat in range(ncats):
     if 'qqH' in proc: card.write(' %s'%scale_qqH)
     else: card.write(' -')
    
-card.write('\nQCDscale_VH     lnN  ')
+card.write('\nQCDscale_WH     lnN  ')
 for cat in range(ncats):
   for i,proc in enumerate(procs):
-    if 'VH' in proc: card.write(' %s'%scale_VH)
+    if 'WH' in proc: card.write(' %s'%scale_WH)
+    else: card.write(' -')
+   
+card.write('\nQCDscale_ZH     lnN  ')
+for cat in range(ncats):
+  for i,proc in enumerate(procs):
+    if 'ZH' in proc: card.write(' %s'%scale_ZH)
     else: card.write(' -')
    
 card.write('\nQCDscale_ttH    lnN  ')
@@ -146,10 +157,16 @@ for cat in range(ncats):
     if 'qqH' in proc: card.write(' %s'%pdf_qqH)
     else: card.write(' -')
 
-card.write('\nPDF_VH     lnN  ')
+card.write('\nPDF_WH     lnN  ')
 for cat in range(ncats):
   for i,proc in enumerate(procs):
-    if 'VH' in proc: card.write(' %s'%pdf_VH)
+    if 'WH' in proc: card.write(' %s'%pdf_WH)
+    else: card.write(' -')
+   
+card.write('\nPDF_ZH     lnN  ')
+for cat in range(ncats):
+  for i,proc in enumerate(procs):
+    if 'ZH' in proc: card.write(' %s'%pdf_ZH)
     else: card.write(' -')
    
 card.write('\nPDF_ttH    lnN  ')
@@ -178,7 +195,7 @@ if options.justSM or options.justGravGG or options.justGravQQ or options.qqbarCa
   new_card = open('%s'%options.cardname,'w')
   for line in old_card.readlines():
     for cat in range(ncats-1,-1,-1):
-        line = line.replace('ch1_cat%d'%cat,'ch1_kinCat%d_spinCat%d'%(catMap[cat][0],catMap[cat][1]))
+        line = line.replace('ch1_cat%d'%cat,'kinCat%d_spinCat%d_%dTeV'%(catMap[cat][0],catMap[cat][1],options.sqrtS))
     new_card.write(line)
   new_card.close()
   os.system('rm -f %s'%old_card.name)
