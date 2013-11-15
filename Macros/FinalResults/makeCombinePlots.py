@@ -17,14 +17,16 @@ parser.add_option("-n","--name",dest="names",default=[],action="append",help="Se
 parser.add_option("-t","--text",dest="text",type="string",default="",help="Add Text")
 parser.add_option("-e","--expected",dest="expected",default=False,action="store_true",help="Expected only")
 parser.add_option("-m","--method",dest="method",type="string",help="Method to run")
-parser.add_option("-l","--legend",dest="legend",type="string",help="Legend position - x1;y1;x2;y2")
-parser.add_option("-x","--xaxis",dest="xaxis",type="string",help="x-axis range - x1;x2")
-parser.add_option("-y","--yaxis",dest="yaxis",type="string",help="y-axis range - y1;y2")
+parser.add_option("-l","--legend",dest="legend",type="string",help="Legend position - x1,y1,x2,y2")
+parser.add_option("-x","--xaxis",dest="xaxis",type="string",help="x-axis range - x1,x2")
+parser.add_option("-y","--yaxis",dest="yaxis",type="string",help="y-axis range - y1,y2")
 parser.add_option("","--limit",dest="limit",default=False,action="store_true",help="Do limit plot")
 parser.add_option("","--pval",dest="pval",default=False,action="store_true",help="Do p-value plot")
 parser.add_option("","--maxlh",dest="maxlh",default=False,action="store_true",help="Do best fit mu plot")
 parser.add_option("","--mh",dest="mh",default=False,action="store_true",help="Do NLL mass scan plot")
 parser.add_option("","--mu",dest="mu",default=False,action="store_true",help="Do NLL mu scan plot")
+parser.add_option("","--rv",dest="rv",default=False,action="store_true",help="Do NLL rv scan plot")
+parser.add_option("","--rf",dest="rf",default=False,action="store_true",help="Do NLL rf scan plot")
 parser.add_option("","--mumh",dest="mumh",default=False,action="store_true",help="Do NLL mu vs mh scan plot")
 parser.add_option("","--rvrf",dest="rvrf",default=False,action="store_true",help="Do NLL rv vs rf scan plot")
 parser.add_option("-v","--verbose",dest="verbose",default=False,action="store_true")
@@ -37,11 +39,13 @@ if options.pval: options.method='pval'
 if options.maxlh: options.method='maxlh'
 if options.mh: options.method='mh'
 if options.mu: options.method='mu'
+if options.rv: options.method='rv'
+if options.rf: options.method='rf'
 if options.mumh: options.method='mumh'
 if options.rvrf: options.method='rvrf'
 if not options.outname: options.outname=options.method
 
-allowed_methods=['pval','limit','maxlh','mh','mu','mumh','rvrf']
+allowed_methods=['pval','limit','maxlh','mh','mu','mumh','rv','rf','rvrf']
 if not options.datfile and options.method not in allowed_methods:
   print 'Invalid method. Must set one of: ', allowed_methods
   sys.exit()
@@ -64,7 +68,7 @@ dummyHist.SetTitleOffset(0.75,"Y")
 lat = r.TLatex()
 lat.SetNDC()
 lat.SetTextSize(0.03)
-lat.SetTextFont(42);
+lat.SetTextFont(42)
 
 def pvalPlot(allVals):
   
@@ -73,7 +77,7 @@ def pvalPlot(allVals):
   canv.SetLogy(True)
   mg = r.TMultiGraph()
   if not options.legend: leg = r.TLegend(0.6,0.12,0.89,0.4)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetFillColor(0)
 
   # make graphs from values
@@ -95,8 +99,8 @@ def pvalPlot(allVals):
     dummyHist.SetMinimum(mg.GetYaxis().GetXmin())
     dummyHist.SetMaximum(mg.GetYaxis().GetXmax())
   else:
-    dummyHist.SetMinimum(float(options.yaxis.split(';')[0]))
-    dummyHist.SetMaximum(float(options.yaxis.split(';')[1]))
+    dummyHist.SetMinimum(float(options.yaxis.split(',')[0]))
+    dummyHist.SetMaximum(float(options.yaxis.split(',')[1]))
     
   dummyHist.SetLineColor(0)
   dummyHist.SetStats(0)
@@ -116,8 +120,8 @@ def pvalPlot(allVals):
     lines[i].SetLineStyle(2)
     lines[i].SetLineColor(r.kRed)
     labels.append(r.TLatex(110 + 2, y * 1.1, "%d #sigma" % (i+1)))
-    labels[i].SetTextAlign(11);
-    if y<=mg.GetYaxis().GetXmax() and y>=mg.GetYaxis().GetXmin():
+    labels[i].SetTextAlign(11)
+    if (not options.yaxis and y<=mg.GetYaxis().GetXmax() and y>=mg.GetYaxis().GetXmin()) or (options.yaxis and y>=float(options.yaxis.split(',')[0]) and y<=float(options.yaxis.split(',')[1])):
       lines[i].Draw('SAME')
       labels[i].Draw('SAME')
 
@@ -146,7 +150,7 @@ def maxlhPlot(allVals):
   if options.verbose: print 'Plotting maxlh...'
   mg = r.TMultiGraph()
   if not options.legend: leg = r.TLegend(0.6,0.8,0.89,0.89)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetFillColor(0)
  
   # make graph from values
@@ -179,8 +183,8 @@ def maxlhPlot(allVals):
     dummyHist.SetMinimum(mg.GetYaxis().GetXmin())
     dummyHist.SetMaximum(mg.GetYaxis().GetXmax())
   else:
-    dummyHist.SetMinimum(float(options.yaxis.split(';')[0]))
-    dummyHist.SetMaximum(float(options.yaxis.split(';')[1]))
+    dummyHist.SetMinimum(float(options.yaxis.split(',')[0]))
+    dummyHist.SetMaximum(float(options.yaxis.split(',')[1]))
   dummyHist.SetLineColor(0)
   dummyHist.SetStats(0)
   dummyHist.Draw("AXIS")
@@ -232,7 +236,7 @@ def limitPlot(allVals):
   if options.verbose: print 'Plotting limit...'
   mg = r.TMultiGraph()
   if not options.legend: leg = r.TLegend(0.6,0.7,0.89,0.89)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetFillColor(0)
 
   # make graph from values
@@ -302,8 +306,8 @@ def limitPlot(allVals):
     dummyHist.SetMinimum(mg.GetYaxis().GetXmin())
     dummyHist.SetMaximum(mg.GetYaxis().GetXmax())
   else:
-    dummyHist.SetMinimum(float(options.yaxis.split(';')[0]))
-    dummyHist.SetMaximum(float(options.yaxis.split(';')[1]))
+    dummyHist.SetMinimum(float(options.yaxis.split(',')[0]))
+    dummyHist.SetMaximum(float(options.yaxis.split(',')[1]))
   dummyHist.SetLineColor(0)
   dummyHist.SetStats(0)
   dummyHist.Draw("AXIS")
@@ -375,10 +379,18 @@ def plot1DNLL():
   elif options.method=='mu':
     x = 'r'
     xtitle = '#sigma / #sigma_{SM}'
+  elif options.method=='rv':
+    x = 'RV'
+    xtitle = '#mu_{qqH+VH}'
+  elif options.method=='rf':
+    x = 'RF'
+    xtitle = '#mu_{ggH+ttH}'
+  else:
+    sys.exit('Method not recognised for 1D scan %s'%options.method)
 
   canv = r.TCanvas(x,x,500,500)
-  if not options.legend: leg  = r.TLegend(0.35,0.65,0.6,0.79)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  if not options.legend: leg  = r.TLegend(0.35,0.65,0.65,0.79)
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetLineColor(0)
   leg.SetFillColor(0)
 
@@ -438,7 +450,7 @@ def plot1DNLL():
   if options.method=='mh': dH.GetXaxis().SetNdivisions(505)
   dH.GetYaxis().SetTitle('-2 #Delta LL')
   if not options.yaxis: dH.GetYaxis().SetRangeUser(0.,rng)
-  else: dH.GetYaxis().SetRangeUser(float(options.yaxis.split(';')[0]),float(options.yaxis.split(';')[1]))
+  else: dH.GetYaxis().SetRangeUser(float(options.yaxis.split(',')[0]),float(options.yaxis.split(',')[1]))
   dH.SetLineColor(0)
   dH.SetStats(0)
   dH.Draw("AXIS")
@@ -447,7 +459,7 @@ def plot1DNLL():
     gr.GetXaxis().SetRangeUser(axmin,axmax)
     gr.GetXaxis().SetNdivisions(505)
     if not options.yaxis: gr.GetYaxis().SetRangeUser(0.,rng)
-    else: gr.GetYaxis().SetRangeUser(float(options.yaxis.split(';')[0]),float(options.yaxis.split(';')[1]))
+    else: gr.GetYaxis().SetRangeUser(float(options.yaxis.split(',')[0]),float(options.yaxis.split(',')[1]))
     gr.Draw("L")
 
   # draw legend
@@ -510,7 +522,7 @@ def plot2DNLL(xvar="RF",yvar="RV",xtitle="#mu_{ggH+ttH}",ytitle="#mu_{qqH+VH}"):
       gBF.SetPoint(0,getattr(tree,xvar),getattr(tree,yvar))
 
   if not options.legend: leg = r.TLegend(0.7,0.7,0.88,0.88)
-  else: leg = r.TLegend(float(options.legend.split(';')[0]),float(options.legend.split(';')[1]),float(options.legend.split(';')[2]),float(options.legend.split(';')[3]))
+  else: leg = r.TLegend(float(options.legend.split(',')[0]),float(options.legend.split(',')[1]),float(options.legend.split(',')[2]),float(options.legend.split(',')[3]))
   leg.SetFillColor(0)
 
   th2.SetTitle("")
@@ -521,8 +533,8 @@ def plot2DNLL(xvar="RF",yvar="RV",xtitle="#mu_{ggH+ttH}",ytitle="#mu_{qqH+VH}"):
   th2.GetYaxis().SetTitleSize(0.04)
   th2.GetXaxis().SetTitleSize(0.04)
   th2.GetYaxis().SetTitleOffset(1.2)
-  if options.xaxis: th2.GetXaxis().SetRangeUser(float(options.xaxis.split(';')[0]),float(options.xaxis.split(';')[1]))
-  if options.yaxis: th2.GetYaxis().SetRangeUser(float(options.yaxis.split(';')[0]),float(options.yaxis.split(';')[1]))
+  if options.xaxis: th2.GetXaxis().SetRangeUser(float(options.xaxis.split(',')[0]),float(options.xaxis.split(',')[1]))
+  if options.yaxis: th2.GetYaxis().SetRangeUser(float(options.yaxis.split(',')[0]),float(options.yaxis.split(',')[1]))
 
   cont_1sig = th2.Clone('cont_1_sig')
   cont_1sig.SetContour(2)
@@ -545,9 +557,9 @@ def plot2DNLL(xvar="RF",yvar="RV",xtitle="#mu_{ggH+ttH}",ytitle="#mu_{qqH+VH}"):
   gBF.Draw("Psame")
   cont_1sig.Draw("cont3same")
   cont_2sig.Draw("cont3same")
-  leg.AddEntry(gBF,"Best Fit","P");
-  leg.AddEntry(cont_1sig,"1#sigma","L");
-  leg.AddEntry(cont_2sig,"2#sigma","L");
+  leg.AddEntry(gBF,"Best Fit","P"),
+  leg.AddEntry(cont_1sig,"1#sigma","L")
+  leg.AddEntry(cont_2sig,"2#sigma","L")
   leg.Draw()
   # draw text
   if options.text:
@@ -597,7 +609,7 @@ def run():
 
   if options.method=='pval' or options.method=='limit' or options.method=='maxlh':
     runStandard()
-  elif options.method=='mh' or options.method=='mu':
+  elif options.method=='mh' or options.method=='mu' or options.method=='rv' or options.method=='rf':
     r.gROOT.ProcessLine(".x FinalResults/rootPalette.C")
     r.gROOT.LoadMacro('ResultScripts/GraphToTF1.C+')
     plot1DNLL()

@@ -12,17 +12,24 @@ parser.add_option("-C","--nKinCats",dest="kCats",type="int",default=4)
 parser.add_option("-n","--nameOfCard",dest="cardname")
 parser.add_option("-S","--sigfile",default="CMS-HGG_interpolated.root")
 parser.add_option("-B","--bkgfile",default="CMS-HGG.root")
+parser.add_option("--isMultiPdf",default=False,action="store_true")
 parser.add_option("--sqrtS",type="int",default=8)
 (options,args)=parser.parse_args()
 
 ncats=options.cTcats*options.kCats
 card = open(options.cardname,'w')
 
+bkgWS = 'cms_hgg_workspace'
+dataWS = 'cms_hgg_workspace'
+if options.isMultiPdf: 
+	bkgWS = 'multipdf'
+	dataWS = 'multipdf'
+
 card.write('CMS-HGG spin card for for use with combine. RooDataHist+Parametrised Background\n')
 if options.qqbarCard: card.write('For qqbar scan\n')
 else: card.write('For separation and model dependence plots\n')
 card.write('\n------------------------------\nimax *\njmax *\nkmax *\n------------------------------\n')
-card.write('shapes data_obs    *        %s cms_hgg_workspace:roohist_data_mass_$CHANNEL\n'%options.bkgfile)
+card.write('shapes data_obs    *        %s %s:roohist_data_mass_$CHANNEL\n'%(options.bkgfile,bkgWS))
 
 if not options.justGravGG and not options.justGravQQ:
   card.write('shapes ggH         *      %s cms_hgg_workspace:roohist_sig_ggh_mass_m$MASS_$CHANNEL      cms_hgg_workspace:roohist_sig_ggh_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
@@ -37,7 +44,10 @@ if not options.justSM and not options.justGravQQ:
 if options.qqbarCard or options.justGravQQ: 
   card.write('shapes qqbarH_ALT  *      %s cms_hgg_workspace:roohist_sig_qq_grav_mass_m$MASS_$CHANNEL cms_hgg_workspace:roohist_sig_qq_grav_mass_m$MASS_$CHANNEL_$SYSTEMATIC01_sigma\n'%options.sigfile)
 
-card.write('shapes bkg         *        %s cms_hgg_workspace:pdf_data_pol_model_%dTeV_$CHANNEL\n'%(options.bkgfile,options.sqrtS)) 
+if options.isMultiPdf:
+	card.write('shapes bkg         *        %s multipdf:CMS_hgg_$CHANNEL_%dTeV_bkgshape\n'%(options.bkgfile,options.sqrtS))
+else:
+	card.write('shapes bkg         *        %s cms_hgg_workspace:pdf_data_pol_model_%dTeV_$CHANNEL\n'%(options.bkgfile,options.sqrtS)) 
 card.write('------------------------------\n')
 
 procs=[]
@@ -181,7 +191,12 @@ for syst in binned_systs:
     for i,proc in enumerate(procs):
       if proc=='bkg': card.write(' 0')
       else: card.write(' 0.333333')
-     
+
+if options.isMultiPdf:
+	card.write('\n')
+	for cat in range(ncats):
+		card.write('pdfindex_%d_%dTeV discrete\n'%(cat,options.sqrtS))
+
 card.close()
 
 catMap = {}

@@ -147,6 +147,7 @@ for cat in range(4):
 catleg.Draw("same")
 text.DrawLatex(0.1,0.92,"CMS Preliminary Simulation #sqrt{s} = %dTeV"%sqrtS)
 canv.Print('effacccats_%dTeV.pdf'%sqrtS)
+canv.Print('effacccats_%dTeV.png'%sqrtS)
 
 leg = r.TLegend(0.15,0.7,0.4,0.89)
 leg.SetFillColor(0)
@@ -195,6 +196,7 @@ leg.Draw('same')
 text.DrawLatex(0.1,0.92,"CMS Preliminary Simulation #sqrt{s} = %dTeV"%sqrtS)
 canv.Modified()
 canv.Print('before_%dTeV.pdf'%sqrtS)
+canv.Print('before_%dTeV.png'%sqrtS)
 # after
 for p, proc in enumerate(outProcs):
 	histAfter[proc].GetYaxis().SetRangeUser(0.,afterMax*1.2)
@@ -210,6 +212,7 @@ leg.Draw('same')
 text.DrawLatex(0.1,0.92,"CMS Preliminary Simulation #sqrt{s} = %dTeV"%sqrtS)
 canv.Modified()
 canv.Print('after_%dTeV.pdf'%sqrtS)
+canv.Print('after_%dTeV.png'%sqrtS)
 # effacc
 for p, proc in enumerate(outProcs):
 	histAfter[proc].GetYaxis().SetRangeUser(0.,effaccMax*1.2)
@@ -225,6 +228,7 @@ leg.Draw('same')
 text.DrawLatex(0.1,0.92,"CMS Preliminary Simulation #sqrt{s} = %dTeV"%sqrtS)
 canv.Modified()
 canv.Print('after_effacc_%dTeV.pdf'%sqrtS)
+canv.Print('after_effacc_%dTeV.png'%sqrtS)
 
 
 
