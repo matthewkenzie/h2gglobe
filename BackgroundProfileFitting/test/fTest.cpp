@@ -12,22 +12,28 @@
 #include "TLegend.h"
 #include "TCanvas.h"
 #include "RooPlot.h"
+#include "RooCurve.h"
+#include "RooHist.h"
+
 #include "RooWorkspace.h"
 #include "RooDataSet.h"
 #include "RooAbsData.h"
 #include "RooAbsPdf.h"
 #include "RooArgSet.h"
+#include "RooAddPdf.h"
 #include "RooFitResult.h"
 #include "RooMinuit.h"
 #include "RooMinimizer.h"
 #include "RooMsgService.h"
 #include "RooDataHist.h"
 #include "RooExtendPdf.h"
+#include "RooConstVar.h"
 #include "TLatex.h"
 #include "TMacro.h"
 #include "TH1F.h"
 #include "TArrow.h"
 #include "TKey.h"
+#include "TRandom3.h"
 
 #include "RooCategory.h"
 #include "HiggsAnalysis/CombinedLimit/interface/RooMultiPdf.h"
@@ -117,16 +123,67 @@ double getGoodnessOfFit(RooRealVar *mass, RooAbsPdf *mpdf, RooAbsData *datao, st
 
 }
 
-void plot(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, string name, double *prob){
+double calcChi2Full(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, int binning=80, bool perdof=false, bool chi2prob=false){
+	
+	RooPlot *plot = mass->frame();
+	data->plotOn(plot,Binning(binning),Name("data"));
+	pdf->plotOn(plot,Name("model"));
+	plot->Draw();
+	
+	RooCurve *curve = (RooCurve*)plot->findObject("model");
+	RooHist *hist = (RooHist*)plot->findObject("data");
+	
+	double chi2_me = 0.;
+	for (int i=0; i<hist->GetN(); i++){
+		double x,y,err,fy;
+		hist->GetPoint(i,x,y);
+		fy = curve->Eval(x);
+		if (fy >= y) {
+			err = hist->GetErrorYhigh(i);
+		}
+		else {
+			err = hist->GetErrorYlow(i);
+		}
+		//cout << i << " " << x << " " << y << " " << fy << endl;
+		//cout << "\t" << err << endl;
+		double pull = (y-fy)/err;
+		chi2_me += pull*pull;
+	}
+	int nbins = hist->GetN();
+	int ndof = pdf->getVariables()->getSize()-1;
+	if (perdof) return chi2_me/(nbins-ndof);
+	double prob_me = TMath::Prob(chi2_me,nbins-ndof);
+	if (chi2prob) return prob_me; 
+	return chi2_me;
+}
+
+double calcChi2(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, int binning=80){
+	return calcChi2Full(mass,pdf,data,binning,false,false);
+}
+
+double calcChi2pdof(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, int binning=80){
+	return calcChi2Full(mass,pdf,data,binning,true,false);
+}
+
+double calcChi2prob(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, int binning=80){
+	return calcChi2Full(mass,pdf,data,binning,false,true);
+}
+
+void plot(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, string name, double *prob, RooAbsPdf *bkg=NULL){
   
-  RooPlot *plot_chi2 = mass->frame();
-  data->plotOn(plot_chi2,Binning(80));
-  pdf->plotOn(plot_chi2);
-  int np = pdf->getParameters(*data)->getSize();
-  double chi2 = plot_chi2->chiSquare(np);
-//  *prob = TMath::Prob(chi2*(80-np),80-np);
+  *prob = calcChi2prob(mass,pdf,data,80);
+	double chi2 = calcChi2(mass,pdf,data,80);
+
+	//RooPlot *plot_chi2 = mass->frame();
+  //data->plotOn(plot_chi2,Binning(80));
+  //pdf->plotOn(plot_chi2);
+  //int np = pdf->getParameters(*data)->getSize();
+	// if using signal nuisanace parameters and consts in model get counted so have to hack it
+	//if (bkg) np = bkg->getParameters(*data)->getSize();
+	//double chi2 = plot_chi2->chiSquare(np);
+  //*prob = TMath::Prob(chi2*(80-np),80-np);
  
-  *prob = getGoodnessOfFit(mass,pdf,data,name);
+  //*prob = getGoodnessOfFit(mass,pdf,data,name);
   RooPlot *plot = mass->frame();
   mass->setRange("unblindReg_1",100,110);
   mass->setRange("unblindReg_2",150,180);
@@ -139,8 +196,15 @@ void plot(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, string name, doubl
 
  // data->plotOn(plot,Binning(80));
   TCanvas *canv = new TCanvas();
-  pdf->plotOn(plot);
-  pdf->paramOn(plot);
+	if (bkg) {
+		RooArgSet *bkgArgs = bkg->getParameters(*data);
+		pdf->plotOn(plot,Components(*bkg));
+		pdf->paramOn(plot,Parameters(*bkgArgs));
+	}
+	else {
+		pdf->plotOn(plot);
+		pdf->paramOn(plot);
+	}
   if (BLIND) plot->SetMinimum(0.0001);
   plot->SetTitle("");
   plot->Draw();
@@ -148,7 +212,7 @@ void plot(RooRealVar *mass, RooAbsPdf *pdf, RooAbsData *data, string name, doubl
   TLatex *lat = new TLatex();
   lat->SetNDC();
   lat->SetTextFont(42);
-  lat->DrawLatex(0.1,0.91,Form("#chi^{2} = %.3f, Prob = %.2f ",chi2*(80-np),*prob));
+  lat->DrawLatex(0.1,0.91,Form("#chi^{2} = %.3f, Prob = %.2f ",chi2,*prob));
   canv->SaveAs(name.c_str());
   
   delete canv;
@@ -287,6 +351,8 @@ int main(int argc, char* argv[]){
   string datfile;
   string outDir;
   string outfilename;
+	string sigfilename;
+	bool doSBversion=false;
   bool is2011=false;
   bool verbose=false;
   bool saveMultiPdf=false;
@@ -300,6 +366,7 @@ int main(int argc, char* argv[]){
     ("datfile,d", po::value<string>(&datfile)->default_value("dat/fTest.dat"),                  "Right results to datfile for BiasStudy")
     ("outDir,D", po::value<string>(&outDir)->default_value("plots/fTest"),                      "Out directory for plots")
     ("saveMultiPdf", po::value<string>(&outfilename)->default_value("multipdfws.root"),         "Save a MultiPdf model with the appropriate pdfs")
+		("doSBversion", po::value<string>(&sigfilename),																						"Use signal to do SB version")
     ("is2011",                                                                                  "Run 2011 config")
 		("unblind", 																																								"Dont blind plots")
     ("verbose,v",                                                                               "Run with more output")
@@ -308,6 +375,7 @@ int main(int argc, char* argv[]){
   po::store(po::parse_command_line(argc,argv,desc),vm);
   po::notify(vm);
   if (vm.count("help")) { cout << desc << endl; exit(1); }
+	if (vm.count("doSBversion")) doSBversion=true;
   if (vm.count("is2011")) is2011=true;
 	if (vm.count("unblind")) BLIND=false;
   if (vm.count("saveMultiPdf")) {
@@ -343,7 +411,7 @@ int main(int argc, char* argv[]){
 	transferMacros(inFile,outputfile);
 	RooRealVar *intL = (RooRealVar*)inWS->var("IntLumi");
 	outputws->import(*intL);
-  
+
   vector<string> functionClasses;
   //functionClasses.push_back("Chebychev");
   functionClasses.push_back("Bernstein");
@@ -425,6 +493,19 @@ int main(int argc, char* argv[]){
   RooRealVar *mass = (RooRealVar*)inWS->var("CMS_hgg_mass");
   pdfsModel.setObsVar(mass);
   double upperEnvThreshold = 0.1; // upper threshold on delta(chi2) to include function in envelope (looser than truth function)
+ 
+ 	TRandom3 rand;
+	rand.SetSeed(0);
+	TFile *sigFile;
+	RooWorkspace *sigWS;
+	RooRealVar *MH;
+	RooRealVar *mu;
+	if (doSBversion) {
+		sigFile = TFile::Open(sigfilename.c_str());
+	  std::string ext = is2011 ? "7TeV" : "8TeV";
+		sigWS = (RooWorkspace*)sigFile->Get(Form("wsig_%s",ext.c_str()));
+		MH = (RooRealVar*)sigWS->var("MH");
+	}
   
   fprintf(resFile,"Truth Model & d.o.f & $\\Delta NLL_{N+1}$ & $p(\\chi^{2}>\\chi^{2}_{(N\\rightarrow N+1)})$ \\\\\n");
   fprintf(resFile,"\\hline\n");
@@ -505,27 +586,59 @@ int main(int argc, char* argv[]){
 	std::cout << "Determining Envelope Functions for Family " << *funcType << ", cat " << cat << std::endl;
 	std::cout << "Upper end Threshold for highest order function " << upperEnvThreshold <<std::endl;
         while (prob<upperEnvThreshold){
-         RooAbsPdf *bkgPdf = getPdf(pdfsModel,*funcType,order,Form("pdf_%d",cat));
+				std::string ext = is2011 ? "7TeV" : "8TeV";
+         RooAbsPdf *bkgPdf = getPdf(pdfsModel,*funcType,order,Form("pdf_%d_%s",cat,ext.c_str()));
           if (!bkgPdf ){
           // assume this order is not allowed
           order++;
           }
 
           else {
-           RooFitResult *fitRes = bkgPdf->fitTo(*data,Save(true));
+						RooAbsPdf *thePdf;
+						if (doSBversion) {
+							RooAbsPdf *sigPdf = (RooAbsPdf*)sigWS->pdf(Form("sigpdfrelcat%d_allProcs",cat));
+							MH->setVal(125);
+							MH->setConstant(false);
+							MH->setRange(120,130);
+							RooArgSet vars = sigWS->allVars();
+							TIterator *iter = vars.createIterator();
+							RooAbsArg *parg;
+							while ((parg=(RooAbsArg*)iter->Next())) {
+								if (TString(parg->GetName()).Contains("nuisance") or TString(parg->GetName()).Contains("IntLumi")) {
+									RooRealVar *var = (RooRealVar*)sigWS->var(parg->GetName());
+									var->setConstant(true);
+								}
+							}
+							mu = new RooRealVar("mu","mu",-2.,5.);
+							RooConstVar *blindSF = new RooConstVar("blindSF","blindSF",5.*rand.Rndm());
+							RooRealVar *bkgNEvs = new RooRealVar("bkgN","bkgN",data->sumEntries(),data->sumEntries()-5.*TMath::Sqrt(data->sumEntries()),data->sumEntries()+5.*TMath::Sqrt(data->sumEntries()));
+							RooFormulaVar *sigNEvs = new RooFormulaVar("sigN","sigN","@0*@1",RooArgList(*mu,*blindSF));
+							RooAddPdf *sbPdf = new RooAddPdf(Form("sbpdf_%s",bkgPdf->GetName()),"",RooArgList(*bkgPdf,*sigPdf),RooArgList(*bkgNEvs,*mu));
+							thePdf = sbPdf;
+						}
+						else {
+							thePdf = bkgPdf;
+						}
+           RooFitResult *fitRes = thePdf->fitTo(*data,Save(true));
            thisNll = fitRes->minNll();
 	   double myNll = 2.*thisNll;
-           //RooAbsReal *nll = bkgPdf->createNLL(*data);
+           //RooAbsReal *nll = thePdf->createNLL(*data);
            //RooMinuit m(*nll);
            //m.migrad();
            //thisNll = nll->getVal();
-	   double gofProb =0; 
-           plot(mass,bkgPdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,cat),&gofProb);
+	   double gofProb =0;
+
+		 			if (doSBversion) {
+           plot(mass,thePdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,cat),&gofProb,bkgPdf);
+					}
+					else {
+           plot(mass,thePdf,data,Form("%s/%s%d_cat%d.pdf",outDir.c_str(),funcType->c_str(),order,cat),&gofProb);
+					 }
 	
            chi2 = 2.*(prevNll-thisNll);
            if (chi2<0. && order>1) chi2=0.;
            prob = TMath::Prob(chi2,order-prev_order);
-           cout << "\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << endl;
+           cout << "\t " << *funcType << " " << order << " " << prevNll << " " << thisNll << " " << chi2 << " " << prob << " " << gofProb << endl;
            //fprintf(resFile,"%15s && %d && %10.2f && %10.2f && %10.2f \\\\\n",funcType->c_str(),order,thisNll,chi2,prob);
            prevNll=thisNll;
            cache_order=prev_order;
@@ -547,7 +660,7 @@ int main(int argc, char* argv[]){
 	   }
 
            prev_order=order;
-           prev_pdf=bkgPdf;
+           prev_pdf=thePdf;
            order++;
         }
       }

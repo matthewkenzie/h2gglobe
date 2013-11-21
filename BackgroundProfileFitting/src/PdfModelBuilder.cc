@@ -220,10 +220,10 @@ RooAbsPdf* PdfModelBuilder::getExponential(string prefix, int order){
 
 }
 
-RooAbsPdf* PdfModelBuilder::getPowerLawSingle(string prefix, int order){
+RooAbsPdf* PdfModelBuilder::getPowerLawSingle(string prefix, int order, bool verbose){
   
   if (order%2==0){
-    cerr << "ERROR -- addPowerLaw -- only odd number of params allowed" << endl;
+    if (verbose) cerr << "ERROR -- addPowerLaw -- only odd number of params allowed" << endl;
     return NULL;
   }
   else {
@@ -327,10 +327,10 @@ RooAbsPdf* PdfModelBuilder::getPdfFromFile(string &prefix){
   return pdf;
 }
 
-RooAbsPdf* PdfModelBuilder::getExponentialSingle(string prefix, int order){
+RooAbsPdf* PdfModelBuilder::getExponentialSingle(string prefix, int order, bool verbose){
   
   if (order%2==0){
-    cerr << "ERROR -- addExponential -- only odd number of params allowed" << endl;
+    if (verbose) cerr << "ERROR -- addExponential -- only odd number of params allowed" << endl;
     return NULL;
   }
   else {
@@ -355,7 +355,7 @@ RooAbsPdf* PdfModelBuilder::getExponentialSingle(string prefix, int order){
     //exps->Print("v");
     RooAddPdf *exp = new RooAddPdf(prefix.c_str(),prefix.c_str(),*exps,*fracs,true);
     //exp->Print("v");
-    cout << "--------------------------" << endl;
+    //cout << "--------------------------" << endl;
     return exp;
     //bkgPdfs.insert(pair<string,RooAbsPdf*>(exp->GetName(),exp));
 

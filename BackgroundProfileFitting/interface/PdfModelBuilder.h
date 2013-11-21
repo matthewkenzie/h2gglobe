@@ -58,10 +58,10 @@ class PdfModelBuilder {
     RooAbsPdf* getBernstein(string prefix, int order);
     RooAbsPdf* getChebychev(string prefix, int order);
     RooAbsPdf* getPowerLaw(string prefix, int order);
-    RooAbsPdf* getPowerLawSingle(string prefix, int order);
+    RooAbsPdf* getPowerLawSingle(string prefix, int order, bool verbose=true);
     RooAbsPdf* getPowerLawGeneric(string prefix, int order);
     RooAbsPdf* getExponential(string prefix, int order);
-    RooAbsPdf* getExponentialSingle(string prefix, int order);
+    RooAbsPdf* getExponentialSingle(string prefix, int order, bool verbose=true);
     RooAbsPdf* getLaurentSeries(string prefix, int order);
     RooAbsPdf* getKeysPdf(string prefix);
     RooAbsPdf* getPdfFromFile(string &prefix);
