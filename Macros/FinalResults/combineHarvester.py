@@ -357,7 +357,7 @@ def writeMultiDimFit():
 	for i in range(opts.jobs):
 		file = open('%s/sub_m%6.2f_job%d.sh'%(opts.outDir,opts.mh,i),'w')
 		writePreamble(file)
-		exec_line = 'combine %s -M MultiDimFit --X-rtd ADDNLL_FASTEXIT --cminDefaultMinimizerType Minuit2 --algo=grid --saveNLL --setPhysicsModelParameterRanges %s %s --points=%d --firstPoint=%d --lastPoint=%d -n Job%d'%(opts.datacard,par_ranges[opts.method],combine_args[opts.method],opts.pointsperjob*opts.jobs,i*opts.pointsperjob,(i+1)*opts.pointsperjob-1,i)
+		exec_line = 'combine %s -M MultiDimFit --X-rtd ADDNLL_FASTEXIT --keepFailures --cminDefaultMinimizerType Minuit2 --algo=grid --setPhysicsModelParameterRanges %s %s --points=%d --firstPoint=%d --lastPoint=%d -n Job%d'%(opts.datacard,par_ranges[opts.method],combine_args[opts.method],opts.pointsperjob*opts.jobs,i*opts.pointsperjob,(i+1)*opts.pointsperjob-1,i)
 		if opts.mh: exec_line += ' -m %6.2f'%opts.mh
 		if opts.expected: exec_line += ' -t -1'
 		if opts.expectSignal: exec_line += ' --expectSignal %4.2f'%opts.expectSignal

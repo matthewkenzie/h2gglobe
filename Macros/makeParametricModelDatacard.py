@@ -87,29 +87,29 @@ intL = inWS.var('IntLumi').getVal()
 # info = [file,workspace,name]
 if options.isCutBased:
 	if options.isMultiPdf:
-		dataFile = 'CMS-HGG_cutbased_legacy_multipdf_%dTeV.root'%sqrts
-		bkgFile = 'CMS-HGG_cutbased_legacy_multipdf_%dTeV.root'%sqrts
+		dataFile = 'CMS-HGG_cic_%dTeV_multipdf.root'%sqrts
+		bkgFile = 'CMS-HGG_cic_%dTeV_multipdf.root'%sqrts
 		dataWS = 'multipdf'
 		bkgWS = 'multipdf'
 	else:
-		dataFile = 'CMS-HGG_cutbased_legacy_data_%dTeV.root'%sqrts
-		bkgFile = 'CMS-HGG_cutbased_legacy_data_%dTeV.root'%sqrts
+		dataFile = 'CMS-HGG_cic_%dTeV_data.root'%sqrts
+		bkgFile = 'CMS-HGG_cic_%dTeV_data.root'%sqrts
 		dataWS = 'cms_hgg_workspace'
 		bkgWS = 'cms_hgg_workspace'
-	sigFile = 'CMS-HGG_cutbased_legacy_sigfit_%dTeV.root'%sqrts
+	sigFile = 'CMS-HGG_cic_%dTeV_sigfit.root'%sqrts
 	sigWS = 'wsig_%dTeV'%sqrts
 else:
 	if options.isMultiPdf:
-		dataFile = 'CMS-HGG_massfac_%dTeV_multipdf.root'%sqrts
-		bkgFile = 'CMS-HGG_massfac_%dTeV_multipdf.root'%sqrts
+		dataFile = 'CMS-HGG_mva_%dTeV_multipdf.root'%sqrts
+		bkgFile = 'CMS-HGG_mva_%dTeV_multipdf.root'%sqrts
 		dataWS = 'multipdf'
 		bkgWS = 'multipdf'
 	else:
-		dataFile = 'CMS-HGG_massfac_%dTeV_data.root'%sqrts
-		bkgFile = 'CMS-HGG_massfac_%dTeV_data.root'%sqrts
+		dataFile = 'CMS-HGG_mva_%dTeV_data.root'%sqrts
+		bkgFile = 'CMS-HGG_mva_%dTeV_data.root'%sqrts
 		dataWS = 'cms_hgg_workspace'
 		bkgWS = 'cms_hgg_workspace'
-	sigFile = 'CMS-HGG_massfac_%dTeV_sigfit.root'%sqrts
+	sigFile = 'CMS-HGG_mva_%dTeV_sigfit.root'%sqrts
 	sigWS = 'wsig_%dTeV'%sqrts
 
 fileDetails = {}
@@ -129,32 +129,59 @@ fileDetails['ttH'] 			= [sigFile,sigWS,'hggpdfsmrel_%dTeV_tth_$CHANNEL'%sqrts]
 
 # theory systematics arr=[up,down]
 pdfSyst = {}
-pdfSyst['ggH'] = [0.076,-0.070]
-pdfSyst['qqH'] = [0.026,-0.028]
-if splitVH:
-	pdfSyst['WH'] =  [0.042,-0.042]
-	pdfSyst['ZH'] =  [0.042,-0.042]
-else:
-	pdfSyst['VH'] =  [0.042,-0.042]
-pdfSyst['ttH'] = [0.080,-0.080]
 scaleSyst = {}
-scaleSyst['ggH'] = [0.076,-0.082]
-scaleSyst['qqH'] = [0.003,-0.008]
-if splitVH:
-	scaleSyst['WH'] =  [0.021,-0.018]
-	scaleSyst['ZH'] =  [0.021,-0.018]
+# 7 TeV
+if options.is2011:
+	# pdf
+	pdfSyst['ggH'] = [0.076,-0.071] 
+	pdfSyst['qqH'] = [0.025,-0.021]
+	if splitVH:
+		pdfSyst['WH'] = [0.026,-0.026]
+		pdfSyst['ZH'] = [0.027,-0.027]
+	else:
+		pdfSyst['VH'] = [0.037,-0.037]
+	pdfSyst['ttH'] = [0.81,-0.81]
+	# scale
+	scaleSyst['ggH'] = [0.071,-0.078] 
+	scaleSyst['qqH'] = [0.003,-0.003]
+	if splitVH:
+		scaleSyst['WH'] = [0.009,-0.009]
+		scaleSyst['ZH'] = [0.029,-0.029]
+	else:
+		scaleSyst['VH'] = [0.030,-0.030]
+	scaleSyst['ttH'] = [0.032,-0.093]
+# 8 TeV
 else:
-	scaleSyst['VH'] =  [0.021,-0.018]
-scaleSyst['ttH'] = [0.041,-0.094]
+	# pdf
+	pdfSyst['ggH'] = [0.075,-0.069] 
+	pdfSyst['qqH'] = [0.026,-0.028]
+	if splitVH:
+		pdfSyst['WH'] = [0.023,-0.023]
+		pdfSyst['ZH'] = [0.025,-0.025]
+	else:
+		pdfSyst['VH'] = [0.034,-0.034]
+	pdfSyst['ttH'] = [0.081,-0.081]
+	# scale
+	scaleSyst['ggH'] = [0.072,-0.078]
+	scaleSyst['qqH'] = [0.002,-0.002]
+	if splitVH:
+		scaleSyst['WH'] = [0.010,-0.010]
+		scaleSyst['ZH'] = [0.031,-0.031]
+	else:
+		scaleSyst['VH'] = [0.031,-0.031] 
+	scaleSyst['ttH'] = [0.038,-0.093]
+
+# BR uncertainty
+brSyst = [0.050,-0.050]
 
 # global scale
 globalScale = 0.0027
 
 # lumi syst
 if options.is2011:
-	lumiSyst = 0.045
+	lumiSyst = 0.022
 else:
-	lumiSyst = 0.044
+	lumiSyst = 0.026
 
 # vtx eff
 if options.is2011:
@@ -358,6 +385,18 @@ def printTheorySysts():
 				else:
 					outFile.write('- ')
 		outFile.write('\n')
+	outFile.write('\n')
+	
+	# br
+	outFile.write('%-25s   lnN   '%('br_hgg'))
+	for c in range(options.ncats):
+		for p in options.procs:
+			if '%s:%d'%(p,c) in options.toSkip: continue
+			if p in bkgProcs:
+				outFile.write('- ')
+			else:
+				outFile.write('%5.3f/%5.3f '%(1.+brSyst[1],1.+brSyst[0]))
+	outFile.write('\n')
 	outFile.write('\n')
 
 def printLumiSyst():

@@ -488,9 +488,10 @@ def plot1DNLL(returnErrors=False):
     for i in range(tree.GetEntries()):
       tree.GetEntry(i)
       xv = getattr(tree,x)
-      #if tree.deltaNLL>=0:
-      if xv in [re[0] for re in res]: continue
-      else: res.append([xv,2.*tree.deltaNLL])
+      if tree.quantileExpected==1: continue
+      if tree.deltaNLL>=-4:
+        if xv in [re[0] for re in res]: continue
+        else: res.append([xv,2.*tree.deltaNLL])
     res.sort()
     minNLL = min([re[1] for re in res])
     for re in res: 
@@ -568,7 +569,9 @@ def plot1DNLL(returnErrors=False):
     gr.GetXaxis().SetNdivisions(505)
     if not options.yaxis: gr.GetYaxis().SetRangeUser(0.,6)
     else: gr.GetYaxis().SetRangeUser(float(options.yaxis.split(',')[0]),float(options.yaxis.split(',')[1]))
-    gr.Draw("L")
+    gr.SetMarkerSize(2)
+    gr.SetMarkerStyle(r.kOpenCircle)
+    gr.Draw("LP")
 
   # draw legend
   if len(options.files)>1:
