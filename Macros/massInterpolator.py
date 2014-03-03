@@ -167,9 +167,11 @@ def main(options,args):
         for o in tocopy:
             o.Write(o.GetName())
             
-        ows  = ws.Clone()
+        #ows  = ws.Clone()
+        ows  = ROOT.RooWorkspace(ws.GetName())
         files.append(ows)
-        mass = ows.var(options.massName)
+        mass = ws.var(options.massName)
+        #getattr(ows,'import')(mass)
 
         interpolator.printMap()
         ## run interpolation

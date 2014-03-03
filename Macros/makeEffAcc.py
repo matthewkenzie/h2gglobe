@@ -73,7 +73,8 @@ ROOT.gROOT.SetBatch(1)
 #systematics = ["vtxEff","idEff","E_scale","E_res","triggerEff","regSig","phoIdMva"] # These are the main contributions to eff*Acc
 systematics = ["vtxEff","idEff","E_scale","E_res","triggerEff"] # These are the main contributions to eff*Acc
 ## Masses = range(110,152,2) 
-Masses = range(110,151,1) 
+#Masses = range(110,151,1) 
+Masses = [125]
 # -------------------------------------------------------------
 
 f = ROOT.TFile(sys.argv[1])
@@ -148,6 +149,7 @@ for point,M in enumerate(Masses):
 	sm = GetBR(M) * sum(xsecs)
 	
 	effAcc = 100*Sum/(sm*lumi) # calculate Efficiency at mH
+	print 'LAD: ', M, effAcc
 	centralsmooth.SetPoint(point,M,effAcc)
 	central.SetPoint(point,M,effAcc)
 	efficiency.SetPoint(point,M,effAcc)
