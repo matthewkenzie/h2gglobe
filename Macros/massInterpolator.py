@@ -10,7 +10,6 @@ def main(options,args):
     import numpy
     
     ## Load library
-    ROOT.gSystem.Load("$CMSSW_BASE/lib/$SCRAM_ARCH/libHiggsAnalysisCombinedLimit.so");
     ROOT.gSystem.Load("../libLoopAll.so")
     from copy import copy
 
@@ -167,11 +166,9 @@ def main(options,args):
         for o in tocopy:
             o.Write(o.GetName())
             
-        #ows  = ws.Clone()
-        ows  = ROOT.RooWorkspace(ws.GetName())
+        ows  = ws.Clone()
         files.append(ows)
-        mass = ws.var(options.massName)
-        #getattr(ows,'import')(mass)
+        mass = ows.var(options.massName)
 
         interpolator.printMap()
         ## run interpolation
