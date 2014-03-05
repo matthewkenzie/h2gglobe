@@ -42,6 +42,7 @@ string mergefilename_;
 string datfilename_;
 string systfilename_;
 string plotDir_;
+bool skipPlots_=false;
 int mhLow_=110;
 int mhHigh_=150;
 int nCats_;
@@ -78,7 +79,8 @@ void OptionParser(int argc, char *argv[]){
     ("datfilename,d", po::value<string>(&datfilename_)->default_value("dat/config.dat"),      			"Configuration file")
     ("systfilename,s", po::value<string>(&systfilename_)->default_value("dat/photonCatSyst.dat"),		"Systematic model numbers")
     ("plotDir,p", po::value<string>(&plotDir_)->default_value("plots"),						"Put plots in this directory")
-    ("mhLow,L", po::value<int>(&mhLow_)->default_value(110),                                  			"Low mass point")
+    ("skipPlots", 																																									"Do not make any plots")
+		("mhLow,L", po::value<int>(&mhLow_)->default_value(110),                                  			"Low mass point")
     ("nThreads,t", po::value<int>(&ncpu_)->default_value(ncpu_),                               			"Number of threads to be used for the fits")
     ("mhHigh,H", po::value<int>(&mhHigh_)->default_value(150),                                			"High mass point")
     ("nCats,n", po::value<int>(&nCats_)->default_value(9),                                    			"Number of total categories")
@@ -102,6 +104,7 @@ void OptionParser(int argc, char *argv[]){
   po::store(po::parse_command_line(argc,argv,desc),vm);
   po::notify(vm);
   if (vm.count("help")){ cout << desc << endl; exit(1);}
+	if (vm.count("skipPlots"))								skipPlots_=true;
   if (vm.count("spin"))                     spin_=true;
   if (vm.count("isCutBased"))               isCutBased_=true;
   if (vm.count("is2011"))               		is2011_=true;
@@ -291,12 +294,11 @@ int main(int argc, char *argv[]){
 		TRandom3 rand;
 		rand.SetSeed(0);
 		string newdatfilename = Form("tmp/config_%d.dat",rand.Integer(1.e6));
-		vector<string> fitFileElements;
-		split(fitFileElements,cloneFitFile_,boost::is_any_of(":"));
-		cout << "Requested clone of fit parameters from file: " << fitFileElements[0] << " workspace: " << fitFileElements[1] << endl;
+		string cloneWSname = outWS->GetName();
+		cout << "Requested clone of fit parameters from file: " << cloneFitFile_ << " workspace: " << cloneWSname << endl;
 		cout << "This means the configuration of nGaussians given in the datfile: " << datfilename_ << " WILL BE IGNORED" << endl;
-		cout << "Instead the configuration will be picked up from the file: " << fitFileElements[0] << " and dumped in a tempory location: " << newdatfilename << endl;
-		fillCloneSplinesMap(cloneSplinesMapRV,cloneSplinesMapWV,fitFileElements[0],fitFileElements[1]);
+		cout << "Instead the configuration will be picked up from the file: " << cloneFitFile_ << " and dumped in a tempory location: " << newdatfilename << endl;
+		fillCloneSplinesMap(cloneSplinesMapRV,cloneSplinesMapWV,cloneFitFile_,cloneWSname);
 		makeCloneConfig(cloneSplinesMapRV,cloneSplinesMapWV,newdatfilename);
 		datfilename_ = newdatfilename;
 		cout << "Loaded splines from reference file: " << cloneFitFile_ << endl;
@@ -370,7 +372,7 @@ int main(int argc, char *argv[]){
 			if( replace ) {
 				initFitRV.setFitParams(allParameters[replaceWith].first); 
 			}
-			initFitRV.plotFits(Form("%s/initialFits/%s_cat%d_rv",plotDir_.c_str(),proc.c_str(),cat));
+			if (!skipPlots_) initFitRV.plotFits(Form("%s/initialFits/%s_cat%d_rv",plotDir_.c_str(),proc.c_str(),cat));
 		}
     parlist_t fitParamsRV = initFitRV.getFitParams();
     
@@ -389,7 +391,7 @@ int main(int argc, char *argv[]){
 			if( replace ) {
 				initFitWV.setFitParams(allParameters[replaceWith].second); 
 			}
-			initFitWV.plotFits(Form("%s/initialFits/%s_cat%d_wv",plotDir_.c_str(),proc.c_str(),cat));
+			if (!skipPlots_) initFitWV.plotFits(Form("%s/initialFits/%s_cat%d_wv",plotDir_.c_str(),proc.c_str(),cat));
 		}
     parlist_t fitParamsWV = initFitWV.getFitParams();
 
@@ -439,7 +441,7 @@ int main(int argc, char *argv[]){
     		finalModel.buildRvWvPdf("hggpdfsmrel_8TeV",nGaussiansRV,nGaussiansWV,recursive_);
     	}
     	finalModel.getNormalization();
-    	finalModel.plotPdf(plotDir_);
+    	if (!skipPlots_) finalModel.plotPdf(plotDir_);
     	finalModel.save(outWS);
     }
   }
@@ -455,7 +457,7 @@ int main(int argc, char *argv[]){
 	sw.Start();
 	cout << "Starting to combine fits..." << endl;
 	// this guy packages everything up
-	Packager packager(outWS,procs_,nCats_,mhLow_,mhHigh_,skipMasses_,is2011_,plotDir_,mergeWS,cats_);
+	Packager packager(outWS,procs_,nCats_,mhLow_,mhHigh_,skipMasses_,is2011_,skipPlots_,plotDir_,mergeWS,cats_);
 	packager.packageOutput();
 	sw.Stop();
 	cout << "Combination complete." << endl;
