@@ -108,7 +108,7 @@ if options.batch:
 	r.gROOT.SetBatch()
 
 fnames={}
-#fnames['Data'] = 'SMFitToDataSpinCat'
+fnames['Data'] = 'SMFitToDataSpinCat'
 #fnames['Data'] = 'None'
 #fnames['DataNoErr'] = 'SMFitToDataMultiSignal' 
 fnames['SM'] = '_sm_fit_to_sm_asimov_'
@@ -163,6 +163,7 @@ print fkeys
 
 graphs = {}
 for key in fkeys:
+	print key, files[key]
 	graphs[key] = r.TGraphAsymmErrors()
 	graphs[key].SetName(key)
 	graphs[key].SetLineWidth(2)
@@ -186,7 +187,6 @@ for key in fkeys:
 		tree.GetEntry(0)
 		for cat in range(options.spinCats):
 			graphs[key].SetPoint(cat,x[cat],getattr(tree,'r_spinCat%d'%cat))
-			if key=='SM' and cat==0: graphs[key].SetPoint(cat,x[cat],1.)
 			print cat, getattr(tree,'r_spinCat%d'%cat)
 	
 	if key=='Data': 

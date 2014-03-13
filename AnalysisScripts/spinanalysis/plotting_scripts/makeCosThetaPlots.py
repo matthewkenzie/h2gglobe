@@ -117,7 +117,7 @@ for proc, hist in histAfterCats.items():
 effAccRatio=[]
 catmax=0.
 for cat in range(4):
-	effAccRatio.append(histAfterCats['gg_grav'][cat].Clone('gg_grav_sm_rat_cat%d'%cat))
+	effAccRatio.append(histAfterCats['qq_grav'][cat].Clone('gg_grav_sm_rat_cat%d'%cat))
 	effAccRatio[cat].Divide(histAfterCats['sm'][cat])
 	catmax = r.TMath.Max(catmax,effAccRatio[cat].GetMaximum())
 

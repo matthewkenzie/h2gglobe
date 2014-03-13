@@ -13,6 +13,7 @@ parser.add_option("--skipWorkspace",dest="skipWorkspace",action="store_true",def
 parser.add_option("--dryRun",dest="dryRun",action="store_true",default=False)
 parser.add_option("--dataOnly",action="store_true",default=False)
 parser.add_option("--toysOnly",action="store_true",default=False)
+parser.add_option("--postFitToys",type="str",help="Through post fit toys -- get values from files in this directory")
 parser.add_option("-q","--queue")
 (options,args)=parser.parse_args()
 
@@ -158,20 +159,21 @@ if not options.dataOnly:
 	elif ans=='n' or ans=='N' or ans=='no':
 		os.system('bsub -q 8nh -o %s.log %s'%(f.name,f.name))
 
-	# now need to get this back out
-	while not os.path.exists('%s/%s/higgsCombineSMFitToDataMultiSignal.MultiDimFit.mH120.root'%(os.getcwd(),options.dir)):
-		print 'Waiting for data fit...'
-		print 'Fitting output should be available in %s.log'%f.name
-		time.sleep(30)
-	print 'Data fit file found'
+	if not options.postFitToys:
+		# now need to get this back out
+		while not os.path.exists('%s/%s/higgsCombineSMFitToDataMultiSignal.MultiDimFit.mH120.root'%(os.getcwd(),options.dir)):
+			print 'Waiting for data fit...'
+			print 'Fitting output should be available in %s.log'%f.name
+			time.sleep(30)
+		print 'Data fit file found'
 
-	tf = r.TFile('%s/%s/higgsCombineSMFitToDataMultiSignal.MultiDimFit.mH120.root'%(os.getcwd(),options.dir))
-	tree = tf.Get('limit')
-	tree.GetEntry(0)
-	mass = tree.MH
-	tf.Close()
-	print 'Best fit mass was found to be %6.2f'%mass
-	print 'Will now generate spin model toys from this mass point and fit them back'
+		tf = r.TFile('%s/%s/higgsCombineSMFitToDataMultiSignal.MultiDimFit.mH120.root'%(os.getcwd(),options.dir))
+		tree = tf.Get('limit')
+		tree.GetEntry(0)
+		mass = tree.MH
+		tf.Close()
+		print 'Best fit mass was found to be %6.2f'%mass
+		print 'Will now generate spin model toys from this mass point and fit them back'
 
 	# now generate a toy at this mass for each spin hypothesis
 	# make spin workspace first
@@ -179,19 +181,31 @@ if not options.dataOnly:
 		os.system('text2workspace.py %s -P HiggsAnalysis.CombinedLimit.HiggsJPC:twoHypothesisHiggs --PO=fqqFloating --PO=muFloating --PO higgsMassRange=122,128 -o %s/%s'%(options.cardSpin,options.dir,options.cardSpin.replace('.txt','.root')))
 	options.cardSpin = options.cardSpin.replace('.txt','.root')
 
+	massesPerPoint={}
 	# gen toys
 	for name,fqq,x in [ ['sm',0.0,0.0] , ['gravgg',0.0,1.0] , ['grav50gg50qq',0.5,1.0] , ['gravqq',1.0,1.0] ]:
+		# default is throw at mu=1
+		expectSignal=1.
+		if options.postFitToys:
+			tempTF = r.TFile('%s/%s/higgsCombineDataFit_fqq%4.2f_x%1.0f.MultiDimFit.mH120.root'%(os.getcwd(),options.postFitToys,fqq,x))
+			tempTree = tempTF.Get('limit')
+			tempTree.GetEntry(0)
+			mass = tempTree.MH
+			massesPerPoint['%4.2f_%1.0f'%(fqq,x)]=mass
+			expectSignal = tempTree.r
+
 		f = open('%s/%s/sub_gen_%s.sh'%(os.getcwd(),options.dir,name),'w')
-		line = 'combine %s -M GenerateOnly -m %6.2f -t -1 --setPhysicsModelParameters fqq=%4.2f,x=%1.0f --freezeNuisances fqq,x,MH --redefineSignalPOIs r --expectSignal=1 -n _%s_asimov --saveToys -s 0'%(options.cardSpin,mass,fqq,x,name)
+		line = 'combine %s -M GenerateOnly -m %6.2f -t -1 --setPhysicsModelParameters fqq=%4.2f,x=%1.0f --freezeNuisances fqq,x,MH --redefineSignalPOIs r --expectSignal=%4.2f -n _%s_asimov --saveToys -s 0'%(options.cardSpin,mass,fqq,x,expectSignal,name)
 		writeScript(f,[options.cardSpin],line)
 		f.close()
 		os.system('chmod +x %s'%f.name)
-		print 'Throwing Asimov for %s hypothesis - fqq=%4.2f x=%1.0f'%(name,fqq,x)
+		print 'Throwing Asimov for %s hypothesis - fqq=%4.2f x=%1.0f MH=%6.2f r=%4.2f'%(name,fqq,x,mass,expectSignal)
 		os.system('bash %s >& %s.log'%(f.name,f.name))
 		print 'Done'
 
 	# now fit the toys back - use sm workspace for this - don't need errors so don't run grid
 	for name,fqq,x in [ ['sm',0.0,0.0] , ['gravgg',0.0,1.0] , ['grav50gg50qq',0.5,1.0] , ['gravqq',1.0,1.0] ]:
+		mass = massesPerPoint['%4.2f_%1.0f'%(fqq,x)]
 		f = open('%s/%s/sub_fit_sm_to_%s.sh'%(os.getcwd(),options.dir,name),'w')
 		line = 'combine %s -M MultiDimFit --redefineSignalPOIs '%options.cardJustSM
 		for sCat in range(options.spinCats):
