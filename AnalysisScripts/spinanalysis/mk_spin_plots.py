@@ -30,7 +30,8 @@ if not os.path.isfile('extractSignificanceStats.C'):
   sys.exit('Can\'t find file - extractSignificanceStats.C')
 r.gROOT.ProcessLine('.L extractSignificanceStats.C+')
 from ROOT import extractSignificanceStats
-from ROOT import setTDRStyle
+#from ROOT import setTDRStyle
+r.gROOT.ProcessLine(".x hggPaperStyle.C")
 
 outf = r.TFile('HggSpinStats.root','RECREATE')
 canv = r.TCanvas()
@@ -538,21 +539,21 @@ def doqqbar():
   dummyHist.SetMinimum(ymin)
   dummyHist.SetMaximum(ymax)
   dummyHist.SetStats(0)
-  dummyHist.GetXaxis().SetLabelSize(0.05);
-  dummyHist.GetXaxis().SetTitleSize(0.05);
-  dummyHist.GetYaxis().SetLabelSize(0.05);
-  dummyHist.GetYaxis().SetTitleSize(0.05);
-  dummyHist.GetXaxis().SetTitleOffset(0.9);
-  dummyHist.GetYaxis().SetTitleOffset(0.9);
+  dummyHist.GetXaxis().SetLabelSize(0.045);
+  dummyHist.GetXaxis().SetTitleSize(0.045);
+  dummyHist.GetYaxis().SetLabelSize(0.045);
+  dummyHist.GetYaxis().SetTitleSize(0.045);
+  dummyHist.GetXaxis().SetTitleOffset(1.1);
+  dummyHist.GetYaxis().SetTitleOffset(1.2);
   dummyHist.Draw("AXIS")
 
-  leg = r.TLegend(0.6,0.65,0.89,0.89);
+  leg = r.TLegend(0.45,0.65,0.89,0.89);
   leg.SetLineColor(0);
   leg.SetFillColor(0);
-  leg.AddEntry(grSM,"X#rightarrow#gamma#gamma 0^{+}","lp");
-  leg.AddEntry(grSM68,"#pm 1#sigma expected","f");
-  leg.AddEntry(grSM95,"#pm 2#sigma expected","f");
-  leg.AddEntry(grGRAV,"X#rightarrow#gamma#gamma 2^{+}_{m}","lp");
+  leg.AddEntry(grSM,"Expected 0^{+}#rightarrow#gamma#gamma","lp");
+  leg.AddEntry(grSM68,"Expected 0^{+} #pm1#sigma","f");
+  leg.AddEntry(grSM95,"Expected 0^{+} #pm2#sigma","f");
+  leg.AddEntry(grGRAV,"Expected 2_{m}^{+}#rightarrow#gamma#gamma","lp");
   if options.unblind: leg.AddEntry(grData,"Observed","lp")
 
   grSM95.Draw("E3same")
@@ -566,8 +567,23 @@ def doqqbar():
   f.SetLineWidth(2)
   f.SetLineStyle(r.kDashed)
   f.Draw("same")
-  pt.Draw("same")
-  pt2.Draw("same")
+  #pt.Draw("same")
+  #pt2.Draw("same")
+  lat = r.TLatex()
+  lat.SetNDC()
+
+  if options.sqrtS=="comb":
+    text = '#sqrt{s}=7TeV L=5.1fb^{-1}, #sqrt{s}=8TeV L=19.7fb^{-1}'
+  elif options.sqrtS=="7" or options.sqrtS=="7TeV":
+    text = '#sqrt{s}=7TeV L=5.1fb^{-1}'
+  elif options.sqrtS=="8" or options.sqrtS=="8TeV":
+    text = '#sqrt{s}=8TeV L=19.7fb^{-1}'
+  else:
+    sys.exit("Invalid sqrtS"+options.sqrtS)
+
+  lat.DrawLatex(0.129,0.93,"CMS H#rightarrow#gamma#gamma")
+  lat.DrawLatex(0.438,0.93,text)
+  
   dummyHist.Draw("AXISGsame")
   canv.Update()
   if not options.isBatch: raw_input("Looks ok?")
@@ -575,9 +591,11 @@ def doqqbar():
   if options.unblind:
     canv.Print(options.outDir+'/fqqbar_unblind.pdf')
     canv.Print(options.outDir+'/fqqbar_unblind.png')
+    canv.Print(options.outDir+'/fqqbar_unblind.root')
   else:
     canv.Print(options.outDir+'/fqqbar_blind.pdf')
     canv.Print(options.outDir+'/fqqbar_blind.png')
+    canv.Print(options.outDir+'/fqqbar_blind.root')
 
   grSM.SetName('fqqSM')
   grGRAV.SetName('fqqGRAV')
@@ -607,7 +625,7 @@ def doChannelCompatiblityStandard():
 def makeCombineStyleSeparationPlot(ifile,leg,ofile,rebin,xlow,xhigh):
 
   print 'Plotting combine style separartion'
-  setTDRStyle()
+  #setTDRStyle()
   expCLs = r.Double(0)
   obsCLs = r.Double(0)
   extractSignificanceStats(expCLs,obsCLs,options.unblind,leg,options.outDir+'/'+ofile,ifile,rebin,xlow,xhigh,options.sqrtS)

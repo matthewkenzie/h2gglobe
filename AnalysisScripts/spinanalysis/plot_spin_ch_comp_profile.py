@@ -10,10 +10,12 @@ parser.add_option("-b","--batch",default=False,action="store_true")
 parser.add_option("-o","--outfile",default="chcomp")
 parser.add_option("-S","--sqrtS",default="comb")
 parser.add_option("-L","--legPos",default="TL")
+parser.add_option("-H","--drawAsHist",default=False,action="store_true")
 (options,args) = parser.parse_args()
 
 import ROOT as r
-import sys,os
+import sys,os,array
+r.gROOT.ProcessLine(".x hggPaperStyle.C")
 
 if options.legPos!="TL" and options.legPos!="TR" and options.legPos!="BL" and options.legPos!="BR":
 	sys.exit("Invalid legend position"+options.legPos)
@@ -108,7 +110,7 @@ if options.batch:
 	r.gROOT.SetBatch()
 
 fnames={}
-#fnames['Data'] = 'SMFitToDataSpinCat'
+fnames['Data'] = 'SMFitToDataSpinCat'
 #fnames['Data'] = 'None'
 #fnames['DataNoErr'] = 'SMFitToDataMultiSignal' 
 fnames['SM'] = '_sm_fit_to_sm_asimov_'
@@ -128,26 +130,28 @@ for root,dir,fs in os.walk(options.dir):
 
 print files
 
+key_order = ['Data','SM','GravGG','Grav50GG50QQ','GravQQ']
 opts={}
-opts['Data'] = 						[r.kBlack,	r.kFullCircle,			"Observed"]
-opts['DataNoErr'] = 			[r.kBlack,	r.kFullCircle,			"Observed"]
-opts['SM'] = 							[r.kRed,		r.kFullSquare,			"X#rightarrow#gamma#gamma 0^{+}"]
-opts['GravGG'] = 					[r.kBlue,		r.kFullTriangleUp,	"X#rightarrow#gamma#gamma 2^{+}_{m}(100%gg)"]
-opts['Grav50GG50QQ'] = 		[r.kMagenta,r.kFullDiamond,			"X#rightarrow#gamma#gamma 2^{+}_{m}(50%gg,50%qq)"]
-opts['GravQQ'] = 					[r.kGreen,	r.kFullTriangleDown,"X#rightarrow#gamma#gamma 2^{+}_{m}(100%qq)"]
+opts['Data'] = 						[r.kBlack,		r.kFullCircle,			 1.2, "Observed"]
+#opts['DataNoErr'] = 			[r.kBlack,		r.kFullCircle,			 1.2, "Observed"]
+opts['SM'] = 							[r.kRed,			r.kFullSquare,			 1.2, "Expected J^{P} = 0^{+} (SM)"]
+opts['GravGG'] = 					[r.kBlue,			r.kFullTriangleUp,	 1.6, "Expected J^{P} = 2^{+}_{m} (f_{q#bar{q}}=0.0)"]
+opts['Grav50GG50QQ'] = 		[r.kMagenta,	r.kFullDiamond,			 1.9, "Expected J^{P} = 2^{+}_{m} (f_{q#bar{q}}=0.5)"]
+opts['GravQQ'] = 					[r.kGreen+1,	r.kFullTriangleDown, 1.6, "Expected J^{P} = 2^{+}_{m} (f_{q#bar{q}}=1.0)"]
 dummyHist = r.TH2F('dummy','',1,0.,1.,1,float(options.yaxis.split(',')[0]),float(options.yaxis.split(',')[1]))
 dummyHist.GetXaxis().SetTitle('|cos#theta*|')
-dummyHist.GetYaxis().SetTitle('#sigma/#sigma_{SM}')
+dummyHist.GetYaxis().SetTitle('#mu')#sigma/#sigma_{SM}')
 
 x=[0.1,0.2875,0.4625,0.65,0.875]
-
+boundaries = array.array('f',[0.0,0.2,0.375,0.55,0.75,1.0])
+boundHist = r.TH1F('bound','',len(boundaries)-1,boundaries)
 canv = r.TCanvas()
-canv.SetGrid()
+#canv.SetGrid()
 
 dummyHist.Draw("AXISG")
 dummyHist.SetStats(0)
 if options.legPos=="TL":
-	leg = r.TLegend(0.11,0.65,0.4,0.89)
+	leg = r.TLegend(0.15,0.62,0.6,0.91)
 elif options.legPos=="BL":
 	leg = r.TLegend(0.11,0.11,0.4,0.35)
 elif options.legPos=="TR":
@@ -162,15 +166,25 @@ fkeys.sort()
 print fkeys
 
 graphs = {}
-for key in fkeys:
+hists = {}
+for key in key_order:
 	graphs[key] = r.TGraphAsymmErrors()
 	graphs[key].SetName(key)
 	graphs[key].SetLineWidth(2)
 	graphs[key].SetLineColor(opts[key][0])
 	graphs[key].SetMarkerColor(opts[key][0])
 	graphs[key].SetMarkerStyle(opts[key][1])
+	graphs[key].SetMarkerSize(opts[key][2])
+	hists[key] = r.TH1F('hist_%s'%key,'',len(boundaries)-1,boundaries)
+	hists[key].SetLineColor(opts[key][0])
+	hists[key].SetLineWidth(4)
+
+print graphs
+print hists
+
+for key in key_order:
 	if key=='Data': 
-		leg.AddEntry(graphs[key],opts[key][2],"EP")
+		leg.AddEntry(graphs[key],opts[key][3],"EP")
 		print 'oiy\n', files[key]
 		sfiles = files[key].sort()
 		print sfiles
@@ -178,16 +192,17 @@ for key in fkeys:
 			print file
 			res = plot1DNLL(options.dir+'/'+file,"r_spinCat%d"%p,"spinCat%d"%p)
 			graphs[key].SetPoint(p,x[p],res[0])
-			graphs[key].SetPointError(p,0.0,0,res[2],res[1])
+			graphs[key].SetPointError(p,x[p]-boundHist.GetBinLowEdge(p+1),boundHist.GetBinLowEdge(p+2)-x[p],res[2],res[1])
 	else: 
-		if key!='DataNoErr': leg.AddEntry(graphs[key],opts[key][2],"LP")
+		if key!='DataNoErr': 
+			if options.drawAsHist: leg.AddEntry(hists[key],opts[key][3],"L")
+			else: leg.AddEntry(graphs[key],opts[key][3],"LP")
 		tf = r.TFile(options.dir+'/'+files[key][0])
 		tree = tf.Get('limit')
 		tree.GetEntry(0)
 		for cat in range(options.spinCats):
 			graphs[key].SetPoint(cat,x[cat],getattr(tree,'r_spinCat%d'%cat))
-			if key=='SM' and cat==0: graphs[key].SetPoint(cat,x[cat],1.)
-			print cat, getattr(tree,'r_spinCat%d'%cat)
+			hists[key].SetBinContent(cat+1,getattr(tree,'r_spinCat%d'%cat))
 	
 	if key=='Data': 
 		if options.unblind: 
@@ -196,7 +211,10 @@ for key in fkeys:
 		if options.unblind:
 			graphs[key].Draw("Psame")
 	else: 
-		graphs[key].Draw("LPsame")
+		if options.drawAsHist:
+			hists[key].Draw("HISTsame")
+		else:
+			graphs[key].Draw("LPsame")
 
 line = r.TLine(0.,0.,1.,0)
 line.SetLineWidth(2)
@@ -206,31 +224,26 @@ leg.Draw("same")
 if options.unblind: 
 	if 'DataNoErr' in graphs.keys(): graphs['DataNoErr'].Draw("Psame")
 	if 'Data' in graphs.keys(): graphs['Data'].Draw("PEsame")
-pt = r.TPaveText(0.1,0.91,0.45,0.99,"NDC");
-pt.SetTextAlign(12);
-pt.SetTextSize(0.04);
-pt.SetFillColor(0);
-pt.AddText("CMS Preliminary");
-pt.SetBorderSize(0);
-pt2 = r.TPaveText(0.75,0.90,0.9,0.99,"NDC");
-pt2.SetTextAlign(32);
-pt2.SetTextSize(0.04);
-pt2.SetFillColor(0);
+
+lat = r.TLatex()
+lat.SetNDC()
+
 if options.sqrtS=="comb":
-	pt2.AddText("#splitline{#sqrt{s} = 7 TeV, L = 5.1 fb^{-1}}{#sqrt{s} = 8 TeV, L = 19.7 fb^{-1}}");
+	text = '#sqrt{s}=7TeV L=5.1fb^{-1}, #sqrt{s}=8TeV L=19.7fb^{-1}'
 elif options.sqrtS=="7" or options.sqrtS=="7TeV":
-	pt2.AddText(" #sqrt{s} = 7 TeV, L = 5.1 fb^{-1}");
+	text = '#sqrt{s}=7TeV L=5.1fb^{-1}'
 elif options.sqrtS=="8" or options.sqrtS=="8TeV":
-	pt2.AddText(" #sqrt{s} = 8 TeV, L = 19.7 fb^{-1}");
+	text = '#sqrt{s}=8TeV L=19.7fb^{-1}'
 else:
 	sys.exit("Invalid sqrtS"+options.sqrtS)
-pt2.SetBorderSize(0);
-pt.Draw("same")
-pt2.Draw("same")
+
+lat.DrawLatex(0.129,0.93,"CMS H#rightarrow#gamma#gamma")
+lat.DrawLatex(0.438,0.93,text)
 canv.Update()
 canv.Modified()
 if not options.batch:
 	raw_input('Good?\n')
 canv.Print('%s.pdf'%options.outfile)
 canv.Print('%s.png'%options.outfile)
+canv.Print('%s.root'%options.outfile)
 
